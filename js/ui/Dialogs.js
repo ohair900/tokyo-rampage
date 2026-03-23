@@ -1,6 +1,8 @@
 import { $, createElement, clearElement } from '../utils/dom.js';
 import { bus } from '../utils/eventBus.js';
 import { monsterSVG } from './SVGAssets.js';
+import { game } from '../engine/Game.js';
+import { networkAdapter } from '../net/NetworkAdapter.js';
 
 class Dialogs {
   constructor() {
@@ -35,6 +37,7 @@ class Dialogs {
           textContent: 'Yield Tokyo',
           onClick: () => {
             this.hide();
+            if (game.multiplayerAdapter) networkAdapter.sendYieldDecision(true);
             resolve(true);
           }
         }),
@@ -43,6 +46,7 @@ class Dialogs {
           textContent: 'Stay in Tokyo',
           onClick: () => {
             this.hide();
+            if (game.multiplayerAdapter) networkAdapter.sendYieldDecision(false);
             resolve(false);
           }
         }),

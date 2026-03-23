@@ -12,6 +12,7 @@ import { statsTracker } from './engine/StatsTracker.js';
 import { tutorialOverlay } from './ui/TutorialOverlay.js';
 import { lobbyUI } from './net/LobbyUI.js';
 import { networkAdapter } from './net/NetworkAdapter.js';
+import { multiplayerSync } from './net/MultiplayerSync.js';
 
 // Mobile viewport height fix (avoids 100vh including URL bar)
 function setVH() {
@@ -136,6 +137,7 @@ bus.on('net:gameStart', (msg) => {
       });
 
       game.setMultiplayerAdapter(networkAdapter);
+      multiplayerSync.enable();
       game.initGame(configs, POWER_CARDS, msg.cardDeckSeed);
     });
   }, 400);
@@ -149,8 +151,10 @@ document.addEventListener('keydown', (e) => {
 
   if (e.key === 'Enter') {
     if (gameState.rerollsLeft > 0) {
+      if (game.multiplayerAdapter) networkAdapter.sendReroll();
       reroll();
     } else {
+      if (game.multiplayerAdapter) networkAdapter.sendConfirmDice();
       confirmDice();
       game.resolveDice();
     }

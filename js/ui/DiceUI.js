@@ -5,6 +5,7 @@ import { toggleKeep, reroll, confirmDice } from '../engine/Dice.js';
 import { game } from '../engine/Game.js';
 import { PHASES, DICE_FACES } from '../data/constants.js';
 import { diceFaceSVG } from './SVGAssets.js';
+import { networkAdapter } from '../net/NetworkAdapter.js';
 
 const FACE_DISPLAY = {
   '1': { svg: diceFaceSVG('1', 28), className: 'face-number' },
@@ -161,6 +162,9 @@ class DiceUI {
 
   onReroll() {
     if (gameState.phase !== PHASES.ROLLING || this.animating) return;
+    if (game.multiplayerAdapter) {
+      networkAdapter.sendReroll();
+    }
     reroll();
   }
 
@@ -168,6 +172,9 @@ class DiceUI {
     if (gameState.phase !== PHASES.ROLLING || this.animating) return;
     this.rollBtn.disabled = true;
     this.confirmBtn.disabled = true;
+    if (game.multiplayerAdapter) {
+      networkAdapter.sendConfirmDice();
+    }
     confirmDice();
     game.resolveDice();
   }

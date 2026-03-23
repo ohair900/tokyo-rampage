@@ -59,6 +59,12 @@ class Renderer {
     bus.on('turn:start', ({ player, round }) => {
       this.updateHeader(player, round);
     });
+
+    // Show waiting indicator for remote player turns
+    bus.on('net:remoteTurn', ({ player }) => {
+      const phaseEl = $('#phase-info');
+      if (phaseEl) phaseEl.textContent = `Waiting for ${player.name}...`;
+    });
     // Only update phase indicator on actual phase changes, not every state mutation
     bus.on('state:changed', ({ prop }) => {
       if (prop === 'phase') this.updatePhaseIndicator();

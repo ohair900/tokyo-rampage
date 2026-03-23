@@ -6,6 +6,7 @@ import { game } from '../engine/Game.js';
 import { PHASES, SWEEP_COST, MAX_HP } from '../data/constants.js';
 import { cardFrameSVG } from './SVGAssets.js';
 import { hasCard, spendEnergy } from '../state/actions.js';
+import { networkAdapter } from '../net/NetworkAdapter.js';
 
 class CardStoreUI {
   constructor() {
@@ -52,6 +53,7 @@ class CardStoreUI {
           this.purchasing = true;
           cardEl.classList.add('card-exit');
           cardEl.addEventListener('animationend', () => {
+            if (game.multiplayerAdapter) networkAdapter.sendBuyCard(i);
             buyCard(player, i);
             this.purchasing = false;
             this.render();
@@ -71,6 +73,7 @@ class CardStoreUI {
         textContent: `Sweep (\u26a1${SWEEP_COST})`,
         onClick: () => {
           if (canSweep) {
+            if (game.multiplayerAdapter) networkAdapter.sendSweepStore();
             sweepStore(player);
             this.render();
           }
@@ -84,6 +87,7 @@ class CardStoreUI {
           textContent: 'Heal 1 HP (\u26a12)',
           onClick: () => {
             if (spendEnergy(player, 2)) {
+              if (game.multiplayerAdapter) networkAdapter.sendRapidHeal();
               player.hp = Math.min(player.hp + 1, maxHP);
               bus.emit('player:healed', { player, amount: 1 });
               this.render();
@@ -94,7 +98,10 @@ class CardStoreUI {
       actions.appendChild(createElement('button', {
         className: 'btn btn-done',
         textContent: 'Done Buying',
-        onClick: () => game.endBuyPhase()
+        onClick: () => {
+          if (game.multiplayerAdapter) networkAdapter.sendEndBuy();
+          game.endBuyPhase();
+        }
       }));
       this.container.appendChild(actions);
     }
