@@ -158,7 +158,7 @@ body {
 /* Main game grid */
 .game-grid {
   display: grid;
-  grid-template-columns: 260px 1fr 280px;
+  grid-template-columns: 220px 1fr 240px;
   grid-template-rows: 1fr auto auto;
   gap: 0;
   height: calc(100vh - 56px);
@@ -166,7 +166,7 @@ body {
 
 /* Panels - Frosted Glass */
 .panel {
-  padding: 16px;
+  padding: 12px;
   border-right: 1px solid var(--glass-border);
   overflow-y: auto;
   background: var(--glass-bg);
@@ -234,8 +234,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 16px 24px;
+  gap: 12px;
+  padding: 10px 16px;
   background: rgba(22, 33, 62, 0.7);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -264,8 +264,8 @@ body {
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border-top: 1px solid var(--glass-border);
-  padding: 8px 16px;
-  max-height: 150px;
+  padding: 6px 12px;
+  max-height: 100px;
   overflow-y: auto;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }

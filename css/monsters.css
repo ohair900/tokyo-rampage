@@ -4,8 +4,8 @@
   border: 1px solid var(--glass-border);
   border-left: 3px solid var(--monster-color, var(--accent));
   border-radius: var(--radius);
-  padding: 10px 12px;
-  margin-bottom: 8px;
+  padding: 6px 10px;
+  margin-bottom: 6px;
   transition: all 0.3s var(--ease-smooth);
   position: relative;
   overflow: hidden;
@@ -59,27 +59,27 @@
 .monster-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 4px;
 }
 
 .monster-emoji {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
 }
 
 .monster-emoji svg {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
 }
 
 .monster-name {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   flex: 1;
 }
 
@@ -134,17 +134,17 @@
 
 .hp-bar-container {
   position: relative;
-  height: 18px;
+  height: 14px;
   background: rgba(0, 0, 0, 0.4);
-  border-radius: 9px;
+  border-radius: 7px;
   overflow: hidden;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .hp-bar {
   height: 100%;
-  border-radius: 9px;
+  border-radius: 7px;
   transition: width 0.4s ease, background-color 0.4s ease;
   position: relative;
 }
@@ -157,7 +157,7 @@
   right: 0;
   height: 50%;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, transparent 100%);
-  border-radius: 9px 9px 0 0;
+  border-radius: 7px 7px 0 0;
   pointer-events: none;
 }
 
@@ -166,7 +166,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   font-weight: 700;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
@@ -174,11 +174,11 @@
 /* Stats */
 .stat-row {
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .stat {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 

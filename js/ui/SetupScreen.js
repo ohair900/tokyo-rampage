@@ -24,10 +24,11 @@ class SetupScreen {
     this.playerConfigs = [];
     const shuffled = [...MONSTERS].sort(() => Math.random() - 0.5);
     for (let i = 0; i < 6; i++) {
+      const isAI = i >= 1;
       this.playerConfigs.push({
-        name: `Player ${i + 1}`,
+        name: isAI ? shuffled[i].name : `Player ${i + 1}`,
         monster: shuffled[i],
-        isAI: i >= 1, // First player human, rest AI by default
+        isAI,
       });
     }
   }
@@ -66,6 +67,60 @@ class SetupScreen {
     this.container.appendChild(screen);
   }
 
+  // --- Targeted update methods (avoid full re-render) ---
+
+  updatePlayerCountHighlight() {
+    const buttons = this.container.querySelectorAll('.player-count-selector .btn-count');
+    buttons.forEach((btn, idx) => {
+      btn.classList.toggle('selected', (idx + 2) === this.playerCount);
+    });
+  }
+
+  updateDifficultyHighlight() {
+    const levels = ['easy', 'normal', 'hard'];
+    const buttons = this.container.querySelectorAll('.difficulty-selector .btn-difficulty');
+    buttons.forEach((btn, idx) => {
+      btn.classList.toggle('selected', levels[idx] === this.aiDifficulty);
+    });
+  }
+
+  updateGameModeHighlight() {
+    const modes = ['single', 'tournament'];
+    const buttons = this.container.querySelectorAll('.gamemode-selector .btn-count');
+    buttons.forEach((btn, idx) => {
+      btn.classList.toggle('selected', modes[idx] === this.gameMode);
+    });
+  }
+
+  updatePlayerList() {
+    const oldList = this.container.querySelector('.player-list');
+    if (oldList) {
+      oldList.replaceWith(this.createPlayerList());
+    }
+  }
+
+  updateStartButton() {
+    const btn = this.container.querySelector('.btn-start');
+    if (btn) {
+      btn.textContent = this.gameMode === 'tournament' ? 'Start Tournament!' : 'Start Game!';
+    }
+  }
+
+  updateSeriesVisibility() {
+    const existing = this.container.querySelector('.series-selector');
+    if (this.gameMode === 'tournament') {
+      if (!existing) {
+        const series = this.createSeriesSelector();
+        const playerList = this.container.querySelector('.player-list');
+        if (playerList) playerList.parentNode.insertBefore(series, playerList);
+      }
+    } else if (existing) {
+      existing.remove();
+    }
+  }
+
+  // --- Creators ---
+
   createPlayerCountSelector() {
     const selector = createElement('div', { className: 'player-count-selector' }, [
       createElement('div', { className: 'setup-section-label', textContent: 'Players' }),
@@ -77,7 +132,8 @@ class SetupScreen {
         textContent: String(n),
         onClick: () => {
           this.playerCount = n;
-          this.render();
+          this.updatePlayerCountHighlight();
+          this.updatePlayerList();
         }
       }));
     }
@@ -101,7 +157,7 @@ class SetupScreen {
         className: `btn-difficulty ${level === this.aiDifficulty ? 'selected' : ''}`,
         onClick: () => {
           this.aiDifficulty = level;
-          this.render();
+          this.updateDifficultyHighlight();
         }
       }, [
         createElement('span', { className: 'difficulty-label', textContent: label }),
@@ -122,7 +178,9 @@ class SetupScreen {
         textContent: mode === 'single' ? 'Single Game' : 'Tournament',
         onClick: () => {
           this.gameMode = mode;
-          this.render();
+          this.updateGameModeHighlight();
+          this.updateSeriesVisibility();
+          this.updateStartButton();
         }
       }));
     }
@@ -140,7 +198,10 @@ class SetupScreen {
         textContent: String(n),
         onClick: () => {
           this.seriesLength = n;
-          this.render();
+          const buttons = this.container.querySelectorAll('.series-selector .btn-count');
+          buttons.forEach((btn, idx) => {
+            btn.classList.toggle('selected', [3, 5, 7][idx] === this.seriesLength);
+          });
         }
       }));
     }
@@ -157,10 +218,17 @@ class SetupScreen {
         .filter((_, idx) => idx !== i)
         .map(c => c.monster.id);
 
-      const rowChildren = [
-        // Monster portrait preview
-        createElement('div', { className: 'player-monster-preview' }, [
-          createElement('span', { className: 'player-preview-svg', innerHTML: monsterSVG(config.monster.id, 56) }),
+      const abilityTitle = config.monster.ability
+        ? `${config.monster.ability.name}: ${config.monster.ability.description}`
+        : '';
+
+      const row = createElement('div', { className: 'player-setup-row' }, [
+        // Monster portrait preview (with ability as tooltip)
+        createElement('div', {
+          className: 'player-monster-preview',
+          title: abilityTitle,
+        }, [
+          createElement('span', { className: 'player-preview-svg', innerHTML: monsterSVG(config.monster.id, 44) }),
           createElement('span', {
             className: 'player-preview-name',
             textContent: config.monster.name,
@@ -181,21 +249,18 @@ class SetupScreen {
           className: `btn btn-toggle-ai ${config.isAI ? 'is-ai' : 'is-human'}`,
           textContent: config.isAI ? 'AI' : 'Human',
           onClick: () => {
+            const wasName = config.isAI ? config.monster.name : `Player ${i + 1}`;
             config.isAI = !config.isAI;
-            this.render();
+            // Auto-set name when toggling
+            if (config.isAI && (config.name === `Player ${i + 1}` || config.name === '')) {
+              config.name = config.monster.name;
+            } else if (!config.isAI && config.name === config.monster.name) {
+              config.name = `Player ${i + 1}`;
+            }
+            this.updatePlayerList();
           }
         }),
-      ];
-
-      // Ability info inside the row
-      if (config.monster.ability) {
-        rowChildren.push(createElement('div', { className: 'ability-info' }, [
-          createElement('strong', { textContent: `${config.monster.ability.name}: ` }),
-          document.createTextNode(config.monster.ability.description),
-        ]));
-      }
-
-      const row = createElement('div', { className: 'player-setup-row' }, rowChildren);
+      ]);
       list.appendChild(row);
     }
     return list;
@@ -218,11 +283,15 @@ class SetupScreen {
         title: monster.name,
         onClick: () => {
           if (isUsed) return;
+          // Auto-update AI name if it matches old monster
+          if (config.isAI && config.name === config.monster.name) {
+            config.name = monster.name;
+          }
           config.monster = monster;
-          this.render();
+          this.updatePlayerList();
         }
       }, [
-        createElement('span', { innerHTML: monsterSVG(monster.id, 36) }),
+        createElement('span', { innerHTML: monsterSVG(monster.id, 28) }),
       ]);
 
       grid.appendChild(tile);

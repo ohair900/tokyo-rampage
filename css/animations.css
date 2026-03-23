@@ -53,9 +53,11 @@
   margin-bottom: 40px;
 }
 
-/* Section labels */
+/* Section labels — full width so they sit above buttons in flex containers */
 .setup-section-label {
   display: block;
+  width: 100%;
+  flex-basis: 100%;
   text-align: center;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -110,8 +112,10 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 10px 16px;
-  min-width: 100px;
+  padding: 10px 12px;
+  min-width: 0;
+  flex: 1 1 0;
+  max-width: 160px;
   border-radius: var(--radius);
   background: linear-gradient(135deg, var(--bg-card), #0a2440);
   border: 1px solid var(--glass-border);
@@ -175,8 +179,8 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
-  padding: 12px;
+  gap: 8px;
+  padding: 8px 10px;
   background: var(--glass-bg);
   border-radius: var(--radius);
   border: 1px solid var(--glass-border);
@@ -195,13 +199,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  min-width: 72px;
+  gap: 2px;
+  min-width: 56px;
 }
 
 .player-preview-svg svg {
-  width: var(--icon-xl);
-  height: var(--icon-xl);
+  width: 44px;
+  height: 44px;
 }
 
 .player-preview-name {
@@ -219,8 +223,8 @@
 }
 
 .monster-picker-tile {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -250,8 +254,8 @@
 }
 
 .monster-picker-tile svg {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
 }
 
 /* Ability info inside player row */
@@ -623,11 +627,6 @@
     min-height: 44px;
   }
 
-  .btn-difficulty {
-    min-width: 90px;
-    padding: 8px 12px;
-  }
-
   .difficulty-selector,
   .player-count-selector,
   .gamemode-selector {
@@ -680,11 +679,6 @@
   .btn-start {
     min-height: 48px;
     font-size: 1rem;
-  }
-
-  .btn-difficulty {
-    min-width: 80px;
-    padding: 8px 10px;
   }
 
   .dialog {
