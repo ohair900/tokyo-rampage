@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Icons</title></head>
+<body style="background:#1a1a2e;color:#e0e0e0;font-family:system-ui;padding:40px;text-align:center">
+  <h1>Tokyo Rampage Icon Generator</h1>
+  <p>Click the button to generate and download all icon files.</p>
+  <button id="gen" style="padding:16px 32px;font-size:1.2rem;cursor:pointer;background:#e94560;color:#fff;border:none;border-radius:8px">Generate Icons</button>
+  <div id="preview" style="margin-top:24px"></div>
+  <script>
+    document.getElementById('gen').addEventListener('click', async () => {
+      const resp = await fetch('icon.svg');
+      const svgText = await resp.text();
+      const blob = new Blob([svgText], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        const sizes = [
+          { name: 'icon-512.png', size: 512 },
+          { name: 'icon-192.png', size: 192 },
+          { name: 'apple-touch-icon.png', size: 180 },
+        ];
+        for (const { name, size } of sizes) {
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, size, size);
+          // Download
+          const a = document.createElement('a');
+          a.href = canvas.toDataURL('image/png');
+          a.download = name;
+          a.click();
+          // Show preview
+          const preview = canvas.cloneNode();
+          preview.style.cssText = 'width:96px;height:96px;margin:8px;border-radius:16px';
+          ctx.drawImage(img, 0, 0, size, size);
+          document.getElementById('preview').appendChild(canvas);
+          canvas.style.cssText = 'width:96px;height:96px;margin:8px;border-radius:16px';
+        }
+        URL.revokeObjectURL(url);
+        document.getElementById('gen').textContent = 'Done! Check your downloads.';
+        document.getElementById('gen').disabled = true;
+      };
+      img.src = url;
+    });
+  </script>
+</body>
+</html>
