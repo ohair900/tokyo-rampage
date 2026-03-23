@@ -1,0 +1,143 @@
+/* Lobby */
+.lobby-content {
+  max-width: 480px;
+}
+
+.lobby-choice {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.lobby-btn {
+  min-width: 140px;
+  padding: 12px 24px;
+}
+
+.lobby-field {
+  margin-bottom: 20px;
+}
+
+.lobby-input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  min-height: 44px;
+}
+
+.lobby-code-input {
+  font-family: monospace;
+}
+
+.lobby-status {
+  text-align: center;
+  color: var(--text-secondary);
+  margin: 12px 0;
+  font-size: 0.85rem;
+}
+
+/* Room code display */
+.lobby-room-code {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.lobby-code-display {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: 12px;
+  color: var(--accent);
+  text-shadow: var(--neon-red);
+  padding: 12px;
+  font-family: monospace;
+}
+
+.lobby-share {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.lobby-share-btn {
+  font-size: 0.85rem;
+}
+
+/* Player list */
+.lobby-player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.lobby-player {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+}
+
+.lobby-player-local {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(233, 69, 96, 0.2);
+}
+
+.lobby-player-disconnected {
+  opacity: 0.4;
+}
+
+.lobby-player-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.lobby-player-status {
+  font-size: 0.75rem;
+  color: var(--vp-color);
+}
+
+.lobby-player-disconnected .lobby-player-status {
+  color: var(--hp-color);
+}
+
+/* Connection indicator in game header */
+.connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.connection-dot.connected { background: var(--vp-color); }
+.connection-dot.reconnecting { background: var(--energy-color); animation: pulse 1s infinite; }
+.connection-dot.disconnected { background: var(--hp-color); }
+
+/* Waiting overlay */
+.waiting-indicator {
+  text-align: center;
+  padding: 8px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Responsive */
+@media (max-width: 430px) {
+  .lobby-code-display {
+    font-size: 2rem;
+    letter-spacing: 8px;
+  }
+
+  .lobby-choice {
+    flex-direction: column;
+  }
+
+  .lobby-btn {
+    width: 100%;
+  }
+}

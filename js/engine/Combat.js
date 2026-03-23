@@ -84,6 +84,8 @@ function requestYield(tokyoPlayer, attacker, damage) {
   return new Promise((resolve) => {
     if (tokyoPlayer.isAI) {
       bus.emit('ai:yieldDecision', { player: tokyoPlayer, attacker, damage, resolve });
+    } else if (tokyoPlayer.isRemote) {
+      bus.emit('net:yieldPrompt', { player: tokyoPlayer, attacker, damage, resolve });
     } else {
       bus.emit('ui:yieldPrompt', { player: tokyoPlayer, attacker, damage, resolve });
     }

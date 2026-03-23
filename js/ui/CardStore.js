@@ -30,7 +30,7 @@ class CardStoreUI {
     clearElement(this.container);
 
     const player = gameState.currentPlayer;
-    const isBuying = gameState.phase === PHASES.BUYING && player && !player.isAI;
+    const isBuying = gameState.phase === PHASES.BUYING && player && !player.isAI && !player.isRemote;
 
     // Card slots
     const cardsContainer = createElement('div', { className: 'card-slots' });

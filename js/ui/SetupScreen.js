@@ -184,6 +184,12 @@ class SetupScreen {
         }
       }));
     }
+    // Online multiplayer button
+    selector.appendChild(createElement('button', {
+      className: 'btn btn-count',
+      textContent: 'Online',
+      onClick: () => bus.emit('setup:multiplayer'),
+    }));
     return selector;
   }
 

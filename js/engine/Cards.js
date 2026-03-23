@@ -4,8 +4,8 @@ import { CARD_STORE_SIZE, SWEEP_COST } from '../data/constants.js';
 import { bus } from '../utils/eventBus.js';
 import { shuffle } from '../utils/random.js';
 
-export function initCardStore(cardDefinitions) {
-  gameState.cardDeck = shuffle(cardDefinitions.map((def, i) => ({ ...def, instanceId: i })));
+export function initCardStore(cardDefinitions, seed) {
+  gameState.cardDeck = shuffle(cardDefinitions.map((def, i) => ({ ...def, instanceId: i })), seed);
   refillStore();
 }
 

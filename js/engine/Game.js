@@ -12,7 +12,12 @@ import { statsTracker } from './StatsTracker.js';
 class Game {
   constructor() {
     this.running = false;
+    this.multiplayerAdapter = null;
     this.setupListeners();
+  }
+
+  setMultiplayerAdapter(adapter) {
+    this.multiplayerAdapter = adapter;
   }
 
   setupListeners() {
@@ -29,19 +34,19 @@ class Game {
     });
   }
 
-  initGame(playerConfigs, cardDefinitions = []) {
+  initGame(playerConfigs, cardDefinitions = [], cardDeckSeed) {
     gameState.reset();
     this.running = true;
 
     const players = playerConfigs.map((config, i) =>
-      createPlayerState(i, config.name, config.monster, config.isAI)
+      createPlayerState(i, config.name, config.monster, config.isAI, config.isRemote)
     );
     gameState.players = players;
     gameState.currentPlayerIndex = 0;
     gameState.round = 1;
 
     if (cardDefinitions.length > 0) {
-      initCardStore(cardDefinitions);
+      initCardStore(cardDefinitions, cardDeckSeed);
     }
 
     statsTracker.init(players);
@@ -93,6 +98,8 @@ class Game {
 
     if (player.isAI) {
       bus.emit('ai:turn', { player });
+    } else if (player.isRemote) {
+      bus.emit('net:remoteTurn', { player });
     }
   }
 
@@ -181,6 +188,8 @@ class Game {
 
       if (player.isAI) {
         bus.emit('ai:buy', { player });
+      } else if (player.isRemote) {
+        // Wait for server to relay remote player's buy actions
       }
     } else {
       this.endTurn();

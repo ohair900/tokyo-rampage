@@ -14,7 +14,7 @@ function createReactiveState(initial) {
   });
 }
 
-export function createPlayerState(id, name, monster, isAI = false) {
+export function createPlayerState(id, name, monster, isAI = false, isRemote = false) {
   return {
     id,
     name,
@@ -23,6 +23,8 @@ export function createPlayerState(id, name, monster, isAI = false) {
     vp: STARTING_VP,
     energy: STARTING_ENERGY,
     isAI,
+    isRemote,
+    playerIndex: id,
     inTokyo: false, // 'city', 'bay', or false
     cards: [],
     alive: true,

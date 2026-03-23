@@ -47,7 +47,7 @@ class DiceUI {
     clearElement(this.container);
 
     const player = gameState.currentPlayer;
-    const isHuman = !player.isAI;
+    const isHuman = !player.isAI && !player.isRemote;
 
     gameState.dice.forEach((face, i) => {
       const kept = gameState.keptDice[i];
@@ -88,7 +88,7 @@ class DiceUI {
     clearElement(this.container);
 
     const player = gameState.currentPlayer;
-    const isHuman = !player.isAI;
+    const isHuman = !player.isAI && !player.isRemote;
     const finalDice = [...gameState.dice];
     const intervals = [];
     const dieElements = [];
