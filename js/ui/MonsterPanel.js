@@ -80,7 +80,7 @@ class MonsterPanel {
       style: { '--monster-color': player.monster.color }
     }, [
       createElement('div', { className: 'monster-header' }, [
-        createElement('span', { className: 'monster-emoji', innerHTML: monsterSVG(player.monster.id, 36) }),
+        createElement('span', { className: 'monster-emoji', innerHTML: monsterSVG(player.monster.id, 22) }),
         createElement('span', { className: 'monster-name', textContent: player.name }),
         player.monster.ability ? createElement('span', {
           className: 'ability-tag',
