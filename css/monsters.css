@@ -1,11 +1,17 @@
-/* Monster/Player panels */
+/* Monster/Player panels — 2-column grid */
+#players-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
 .monster-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-left: 3px solid var(--monster-color, var(--accent));
   border-radius: var(--radius);
   padding: 4px 8px;
-  margin-bottom: 4px;
+  margin-bottom: 0;
   transition: all 0.3s var(--ease-smooth);
   position: relative;
   overflow: hidden;
@@ -290,16 +296,9 @@
   animation: monsterHit 0.4s ease;
 }
 
-/* Monsters — phone portrait: 2-column grid */
+/* Monsters — phone portrait */
 @media (max-width: 430px) {
-  #players-panel {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
-  }
-
   .monster-card {
-    margin-bottom: 0;
     padding: 3px 6px;
   }
 
