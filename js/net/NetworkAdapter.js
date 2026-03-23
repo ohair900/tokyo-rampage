@@ -154,6 +154,14 @@ class NetworkAdapter {
     this.send({ type: 'c:endBuy' });
   }
 
+  sendAddAI(name) {
+    this.send({ type: 'c:addAI', name });
+  }
+
+  sendRemoveAI(playerIndex) {
+    this.send({ type: 'c:removeAI', playerIndex });
+  }
+
   sendGameOver(winnerIndex) {
     this.send({ type: 'c:gameOver', winnerIndex });
   }

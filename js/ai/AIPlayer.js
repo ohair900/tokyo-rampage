@@ -6,6 +6,7 @@ import { game } from '../engine/Game.js';
 import { createStrategy } from './strategies.js';
 import { hasCard, spendEnergy } from '../state/actions.js';
 import { PHASES, MAX_HP } from '../data/constants.js';
+import { networkAdapter } from '../net/NetworkAdapter.js';
 
 const AI_DELAY = 800; // ms between AI actions
 const MAX_BUYS_PER_TURN = 5;
@@ -58,6 +59,7 @@ class AIController {
 
       // Set kept dice
       gameState.keptDice = keepDecisions;
+      if (game.multiplayerAdapter) networkAdapter.sendKeepDice(keepDecisions);
       bus.emit('dice:keepChanged', { keptDice: keepDecisions });
 
       // Check if all kept
@@ -65,6 +67,7 @@ class AIController {
       if (allKept || gameState.rerollsLeft <= 0) break;
 
       await this.delay();
+      if (game.multiplayerAdapter) networkAdapter.sendReroll();
       reroll();
     }
 
@@ -72,6 +75,7 @@ class AIController {
 
     // Confirm dice
     if (gameState.phase === PHASES.ROLLING) {
+      if (game.multiplayerAdapter) networkAdapter.sendConfirmDice();
       confirmDice();
       game.resolveDice();
     }
@@ -82,12 +86,16 @@ class AIController {
     const shouldYield = strategy
       ? strategy.shouldYield(player, damage, gameState)
       : player.hp <= 4;
-    setTimeout(() => resolve(shouldYield), AI_DELAY / 2);
+    setTimeout(() => {
+      if (game.multiplayerAdapter) networkAdapter.sendYieldDecision(shouldYield);
+      resolve(shouldYield);
+    }, AI_DELAY / 2);
   }
 
   async handleBuy(player) {
     const strategy = this.strategies.get(player.id);
     if (!strategy) {
+      if (game.multiplayerAdapter) networkAdapter.sendEndBuy();
       game.endBuyPhase();
       return;
     }
@@ -120,6 +128,7 @@ class AIController {
 
         // Check if sweep is better (before first buy)
         if (!boughtAny && strategy.shouldSweep(player, gameState)) {
+          if (game.multiplayerAdapter) networkAdapter.sendSweepStore();
           if (sweepStore(player)) {
             await this.delay();
             continue; // Re-evaluate new store
@@ -127,6 +136,7 @@ class AIController {
         }
 
         // Buy the best card
+        if (game.multiplayerAdapter) networkAdapter.sendBuyCard(best.index);
         if (buyCard(player, best.index)) {
           boughtAny = true;
           buyCount++;
@@ -143,6 +153,7 @@ class AIController {
 
       // No affordable card worth buying — try sweep if haven't bought yet
       if (!boughtAny && strategy.shouldSweep(player, gameState)) {
+        if (game.multiplayerAdapter) networkAdapter.sendSweepStore();
         if (sweepStore(player)) {
           await this.delay();
           boughtAny = true; // Count sweep as an action
@@ -153,6 +164,7 @@ class AIController {
       break; // Nothing more to do
     }
 
+    if (game.multiplayerAdapter) networkAdapter.sendEndBuy();
     game.endBuyPhase();
   }
 
@@ -167,6 +179,7 @@ class AIController {
       strategy.shouldUseRapidHealing(player, gameState)
     ) {
       if (spendEnergy(player, 2)) {
+        if (game.multiplayerAdapter) networkAdapter.sendRapidHeal();
         player.hp = Math.min(player.hp + 1, maxHP);
         bus.emit('player:healed', { player, amount: 1 });
         heals++;

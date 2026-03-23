@@ -125,13 +125,15 @@ bus.on('net:gameStart', (msg) => {
 
     // Build configs from server data, look up full monster objects
     import('./data/monsters.js').then(({ MONSTERS }) => {
+      const isHost = networkAdapter.localPlayerIndex === (msg.hostIndex ?? 0);
       const configs = msg.players.map((p) => {
         const monster = MONSTERS.find(m => m.id === p.monsterId) || MONSTERS[0];
+        const isLocalAI = p.isAI && isHost; // only host runs AI logic
         return {
           name: p.name,
           monster,
-          isAI: p.isAI,
-          isRemote: p.index !== networkAdapter.localPlayerIndex && !p.isAI,
+          isAI: isLocalAI,
+          isRemote: p.index !== networkAdapter.localPlayerIndex && !isLocalAI,
           playerIndex: p.index,
         };
       });

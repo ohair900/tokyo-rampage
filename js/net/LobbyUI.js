@@ -180,15 +180,26 @@ class LobbyUI {
     const playerList = createElement('div', { className: 'lobby-player-list' });
     for (const p of this.players) {
       const isLocal = p.index === networkAdapter.localPlayerIndex;
-      const entry = createElement('div', {
-        className: `lobby-player ${isLocal ? 'lobby-player-local' : ''} ${!p.connected ? 'lobby-player-disconnected' : ''}`,
-      }, [
-        createElement('span', { className: 'lobby-player-name', textContent: p.name + (p.index === this.hostIndex ? ' (Host)' : '') }),
+      const entryChildren = [
+        createElement('span', {
+          className: 'lobby-player-name',
+          textContent: p.name + (p.index === this.hostIndex ? ' (Host)' : '') + (p.isAI ? ' [AI]' : ''),
+        }),
         createElement('span', {
           className: 'lobby-player-status',
-          textContent: p.connected ? 'Ready' : 'Disconnected',
+          textContent: p.isAI ? 'AI' : (p.connected ? 'Ready' : 'Disconnected'),
         }),
-      ]);
+      ];
+      if (isHost && p.isAI) {
+        entryChildren.push(createElement('button', {
+          className: 'btn btn-secondary lobby-remove-ai',
+          textContent: 'X',
+          onClick: () => networkAdapter.sendRemoveAI(p.index),
+        }));
+      }
+      const entry = createElement('div', {
+        className: `lobby-player ${isLocal ? 'lobby-player-local' : ''} ${!p.connected && !p.isAI ? 'lobby-player-disconnected' : ''} ${p.isAI ? 'lobby-player-ai' : ''}`,
+      }, entryChildren);
       playerList.appendChild(entry);
     }
 
@@ -215,10 +226,17 @@ class LobbyUI {
     ];
 
     if (isHost) {
+      if (this.players.length < 6) {
+        children.push(createElement('button', {
+          className: 'btn btn-secondary lobby-btn',
+          textContent: '+ Add AI Player',
+          onClick: () => networkAdapter.sendAddAI(),
+        }));
+      }
       children.push(createElement('button', {
         className: 'btn btn-start lobby-btn',
         textContent: 'Start Game',
-        ...(this.players.filter(p => p.connected).length < 2 ? { disabled: 'disabled' } : {}),
+        ...(this.players.filter(p => p.connected || p.isAI).length < 2 ? { disabled: 'disabled' } : {}),
         onClick: () => networkAdapter.startGame(),
       }));
     } else {

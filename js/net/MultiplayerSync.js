@@ -20,6 +20,7 @@ import { networkAdapter } from './NetworkAdapter.js';
 class MultiplayerSync {
   constructor() {
     this.active = false;
+    this._localEndedTurn = false;
   }
 
   /**
@@ -29,12 +30,14 @@ class MultiplayerSync {
   enable() {
     if (this.active) return;
     this.active = true;
+    this._localEndedTurn = false;
     this._setupLocalInterceptors();
     this._setupRemoteHandlers();
   }
 
   disable() {
     this.active = false;
+    this._localEndedTurn = false;
     // Note: bus listeners persist but check this.active
   }
 
@@ -70,6 +73,15 @@ class MultiplayerSync {
     bus.on('cards:bought', ({ player }) => {
       if (!this.active) return;
       // Already handled by the buy button click
+    });
+
+    // Track when a locally-controlled player (human or host's AI) ends their turn
+    bus.on('turn:end', () => {
+      if (!this.active) return;
+      const player = gameState.currentPlayer;
+      if (this._isLocalTurn() || (player && player.isAI)) {
+        this._localEndedTurn = true;
+      }
     });
 
     // Intercept game over
@@ -163,17 +175,15 @@ class MultiplayerSync {
     // Turn advance from server — move to next player
     bus.on('net:turnAdvance', ({ nextPlayerIndex, round, initialDice }) => {
       if (!this.active) return;
-      // The server tells us who goes next
-      // The local endTurn/nextPlayer flow should have already advanced,
-      // but this serves as a sync check
       networkAdapter.serverDice = initialDice;
-    });
 
-    // Remote player ended buy phase
-    bus.on('net:buyPhaseEnd', ({ playerIndex }) => {
-      if (!this.active) return;
-      if (playerIndex === networkAdapter.localPlayerIndex) return;
-      game.endBuyPhase();
+      if (this._localEndedTurn) {
+        // We initiated this turn end, already advanced locally
+        this._localEndedTurn = false;
+      } else {
+        // Remote player ended their turn, advance the game
+        game.endBuyPhase();
+      }
     });
   }
 
