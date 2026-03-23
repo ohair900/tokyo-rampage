@@ -1,0 +1,296 @@
+/* Monster/Player panels */
+.monster-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid var(--monster-color, var(--accent));
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  transition: all 0.3s var(--ease-smooth);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.monster-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-surface);
+  pointer-events: none;
+}
+
+.monster-card.active {
+  border-color: var(--monster-color, var(--accent));
+  box-shadow:
+    0 0 12px color-mix(in srgb, var(--monster-color, var(--accent)) 40%, transparent),
+    0 0 30px color-mix(in srgb, var(--monster-color, var(--accent)) 20%, transparent),
+    inset 0 0 20px color-mix(in srgb, var(--monster-color, var(--accent)) 5%, transparent);
+  background: rgba(15, 52, 96, 0.6);
+  animation: activeGlow 2s ease-in-out infinite;
+}
+
+@keyframes activeGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 12px color-mix(in srgb, var(--monster-color, var(--accent)) 40%, transparent),
+      0 0 30px color-mix(in srgb, var(--monster-color, var(--accent)) 20%, transparent),
+      inset 0 0 20px color-mix(in srgb, var(--monster-color, var(--accent)) 5%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 18px color-mix(in srgb, var(--monster-color, var(--accent)) 60%, transparent),
+      0 0 40px color-mix(in srgb, var(--monster-color, var(--accent)) 30%, transparent),
+      inset 0 0 30px color-mix(in srgb, var(--monster-color, var(--accent)) 8%, transparent);
+  }
+}
+
+.monster-card.dead {
+  opacity: 0.35;
+  filter: grayscale(0.8);
+}
+
+.monster-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.monster-emoji {
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.monster-emoji svg {
+  width: 36px;
+  height: 36px;
+}
+
+.monster-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  flex: 1;
+}
+
+.ai-badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  background: rgba(15, 52, 96, 0.8);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 1px solid var(--glass-border);
+}
+
+.tokyo-badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  background: var(--accent);
+  border-radius: 4px;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  box-shadow: var(--neon-red);
+  animation: tokyoBadgePulse 2s ease-in-out infinite;
+}
+
+@keyframes tokyoBadgePulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(233, 69, 96, 0.4); }
+  50% { box-shadow: 0 0 12px rgba(233, 69, 96, 0.7), 0 0 24px rgba(233, 69, 96, 0.3); }
+}
+
+/* HP Bar */
+/* HP flash effects */
+@keyframes hpFlashDamage {
+  0%, 100% { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3); }
+  50%      { box-shadow: inset 0 0 12px rgba(231, 76, 60, 0.8), 0 0 8px rgba(231, 76, 60, 0.4); }
+}
+
+@keyframes hpFlashHeal {
+  0%, 100% { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3); }
+  50%      { box-shadow: inset 0 0 12px rgba(46, 204, 113, 0.8), 0 0 8px rgba(46, 204, 113, 0.4); }
+}
+
+.hp-flash-damage {
+  animation: hpFlashDamage 0.5s ease;
+}
+
+.hp-flash-heal {
+  animation: hpFlashHeal 0.5s ease;
+}
+
+.hp-bar-container {
+  position: relative;
+  height: 18px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 9px;
+  overflow: hidden;
+  margin-bottom: 6px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hp-bar {
+  height: 100%;
+  border-radius: 9px;
+  transition: width 0.4s ease, background-color 0.4s ease;
+  position: relative;
+}
+
+.hp-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, transparent 100%);
+  border-radius: 9px 9px 0 0;
+  pointer-events: none;
+}
+
+.hp-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Stats */
+.stat-row {
+  display: flex;
+  gap: 12px;
+}
+
+.stat {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.stat.vp {
+  color: var(--vp-color);
+  text-shadow: 0 0 8px rgba(46, 204, 113, 0.5);
+}
+
+.stat.energy {
+  color: var(--energy-color);
+  text-shadow: 0 0 8px rgba(241, 196, 15, 0.5);
+}
+
+/* Cards on monster */
+.monster-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.card-pip {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  background: rgba(26, 26, 46, 0.8);
+  border-radius: 4px;
+  color: var(--energy-color);
+  cursor: help;
+  border: 1px solid rgba(241, 196, 15, 0.15);
+}
+
+/* ── Monster Portrait Idle Animations ── */
+
+@keyframes crownBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.5px); }
+}
+
+@keyframes jawChomp {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(1.5px); }
+}
+
+@keyframes gearSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes antennaBlink {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.2; }
+}
+
+@keyframes brainPulse {
+  0%, 100% { opacity: 0.3; filter: drop-shadow(0 0 0px transparent); }
+  50% { opacity: 0.6; filter: drop-shadow(0 0 3px rgba(52, 152, 219, 0.6)); }
+}
+
+@keyframes tentacleSway {
+  0%, 100% { transform: rotate(0deg); }
+  33% { transform: rotate(1.5deg); }
+  66% { transform: rotate(-1.5deg); }
+}
+
+@keyframes monsterAttack {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.15); }
+  60% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+@keyframes monsterHit {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(2); }
+}
+
+.monster-anim-crown {
+  animation: crownBob 3s ease-in-out infinite;
+}
+
+.monster-anim-jaw {
+  animation: jawChomp 2.5s ease-in-out infinite;
+}
+
+.monster-anim-gear {
+  animation: gearSpin 8s linear infinite;
+  transform-origin: 32px 28px;
+}
+
+.monster-anim-antenna {
+  animation: antennaBlink 2s ease-in-out infinite;
+}
+
+.monster-anim-brain {
+  animation: brainPulse 3s ease-in-out infinite;
+}
+
+.monster-anim-tentacles {
+  animation: tentacleSway 4s ease-in-out infinite;
+  transform-origin: 32px 34px;
+}
+
+.monster-portrait.attacking {
+  animation: monsterAttack 0.5s ease;
+}
+
+.monster-portrait.hit {
+  animation: monsterHit 0.4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .monster-anim-crown,
+  .monster-anim-jaw,
+  .monster-anim-gear,
+  .monster-anim-antenna,
+  .monster-anim-brain,
+  .monster-anim-tentacles {
+    animation: none;
+  }
+}

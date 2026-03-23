@@ -1,0 +1,156 @@
+/* Game Over Screen */
+.gameover-screen {
+  background: rgba(13, 13, 26, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 800px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  text-align: center;
+  box-shadow: var(--shadow-deep);
+  animation: dialogAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Winner Banner */
+.gameover-winner {
+  margin-bottom: 24px;
+}
+
+.gameover-winner-svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.gameover-winner-svg svg {
+  width: 80px;
+  height: 80px;
+}
+
+.gameover-winner-name {
+  font-size: 1.8rem;
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(233, 69, 96, 0.6), 0 0 30px rgba(233, 69, 96, 0.3);
+  margin-bottom: 4px;
+}
+
+.gameover-winner-stats {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+/* Stats Section */
+.gameover-stats-section {
+  margin-bottom: 24px;
+}
+
+.gameover-stats-section h3,
+.gameover-mvp-section h3,
+.gameover-tournament-section h3 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.stats-table,
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.stats-table th,
+.standings-table th {
+  padding: 8px 6px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.stats-table td,
+.standings-table td {
+  padding: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.stats-table .winner-row {
+  background: rgba(241, 196, 15, 0.1);
+}
+
+.stats-table .winner-row td {
+  color: #f1c40f;
+  font-weight: 600;
+}
+
+.standings-table .champion-row td {
+  color: #f1c40f;
+  font-weight: 700;
+}
+
+/* MVP Awards */
+.gameover-mvp-section {
+  margin-bottom: 24px;
+}
+
+.mvp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.mvp-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 12px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.mvp-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #f1c40f;
+  margin-bottom: 4px;
+}
+
+.mvp-player {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.mvp-value {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* Tournament Section */
+.gameover-tournament-section {
+  margin-bottom: 24px;
+}
+
+/* Actions */
+.gameover-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.gameover-actions .btn-setup {
+  padding: 10px 24px;
+}

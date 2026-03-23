@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tokyo Rampage</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/monsters.css">
+  <link rel="stylesheet" href="css/dice.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/tokyo.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/gameover.css">
+  <link rel="stylesheet" href="css/tournament.css">
+  <link rel="stylesheet" href="css/tutorial.css">
+</head>
+<body>
+
+  <!-- Setup Screen -->
+  <div id="setup-screen"></div>
+
+  <!-- Game Area -->
+  <div id="game-area" class="hidden">
+
+    <!-- Header -->
+    <header class="game-header">
+      <h1>Tokyo Rampage</h1>
+      <button id="btn-mute" class="btn-mute" title="Toggle Sound"></button>
+      <button id="btn-help" class="btn-mute" title="How to Play">?</button>
+      <div class="header-info">
+        <span id="turn-info">Turn: —</span>
+        <span id="phase-info">—</span>
+        <span id="round-info">Round: 1</span>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="game-grid">
+
+      <!-- Left: Players Panel -->
+      <div class="panel players-section">
+        <div class="panel-title">Monsters</div>
+        <div id="players-panel"></div>
+      </div>
+
+      <!-- Center: Tokyo Board -->
+      <div class="panel tokyo-panel">
+        <div id="tokyo-board"></div>
+      </div>
+
+      <!-- Right: Card Store -->
+      <div class="panel card-store-panel">
+        <div class="panel-title">Power Cards</div>
+        <div id="card-store"></div>
+      </div>
+
+      <!-- Dice Section -->
+      <div class="dice-section dice-inactive">
+        <div id="dice-container"></div>
+        <div class="dice-actions">
+          <span id="reroll-info"></span>
+          <button id="btn-reroll" class="btn">Reroll</button>
+          <button id="btn-confirm-dice" class="btn btn-secondary">Confirm</button>
+        </div>
+      </div>
+
+      <!-- Game Log -->
+      <div class="log-section">
+        <div class="panel-title">Game Log</div>
+        <div id="game-log-entries"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Dialog Overlay -->
+  <div id="dialog-overlay"></div>
+
+  <!-- Particle Effects Canvas -->
+  <canvas id="particle-canvas"></canvas>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
