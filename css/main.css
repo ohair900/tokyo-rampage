@@ -263,6 +263,11 @@ body {
   z-index: 999;
 }
 
+/* Touch optimization */
+button, .die.clickable, .store-card.buyable, .btn {
+  touch-action: manipulation;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -279,4 +284,86 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #e94560, #e94560);
+}
+
+/* ---- Responsive: Large phones / landscape ---- */
+@media (max-width: 600px) {
+  body {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .game-header {
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .game-header h1 {
+    font-size: 1rem;
+  }
+
+  .header-info {
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.75rem;
+  }
+
+  .dice-section {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 8px;
+  }
+
+  .dice-actions {
+    justify-content: center;
+  }
+
+  .panel {
+    padding: 10px;
+  }
+
+  .log-section {
+    max-height: 100px;
+  }
+}
+
+/* ---- Responsive: Phone portrait ---- */
+@media (max-width: 430px) {
+  .game-header h1 {
+    font-size: 0.9rem;
+  }
+
+  .header-info {
+    font-size: 0.7rem;
+    gap: 6px;
+  }
+
+  .panel {
+    padding: 8px;
+  }
+
+  .btn {
+    min-height: 44px;
+    font-size: 0.85rem;
+  }
+
+  .btn-mute, #btn-help {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .log-section {
+    max-height: 80px;
+    padding: 6px 10px;
+  }
+
+  .dialog {
+    padding: 20px 16px;
+  }
+
+  .dialog-actions .btn {
+    min-height: 44px;
+    flex: 1;
+  }
 }

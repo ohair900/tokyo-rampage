@@ -263,3 +263,38 @@
 .tutorial-remember input[type="checkbox"] {
   accent-color: var(--accent);
 }
+
+/* Tutorial — phone portrait */
+@media (max-width: 430px) {
+  .tutorial-panel {
+    padding: 20px 16px;
+    max-height: 90vh;
+  }
+
+  .tutorial-step-title {
+    font-size: 1.1rem;
+  }
+
+  .tutorial-body {
+    font-size: 0.85rem;
+  }
+
+  .tutorial-monster-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .tutorial-nav .btn {
+    min-height: 44px;
+    min-width: 80px;
+  }
+
+  .tutorial-zone-diagram {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tutorial-card-types {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

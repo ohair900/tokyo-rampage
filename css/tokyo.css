@@ -125,3 +125,46 @@
   font-size: 0.8rem;
   font-style: italic;
 }
+
+/* Tokyo — large phones */
+@media (max-width: 600px) {
+  .tokyo-slot {
+    width: clamp(140px, 40vw, 200px);
+    padding: 12px;
+  }
+
+  .tokyo-emoji svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .tokyo-name {
+    font-size: 0.75rem;
+  }
+
+  .tokyo-label {
+    font-size: 0.65rem;
+  }
+}
+
+/* Tokyo — phone portrait */
+@media (max-width: 430px) {
+  .tokyo-panel {
+    flex-direction: row;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .tokyo-slot {
+    width: 45%;
+    padding: 8px;
+  }
+
+  .tokyo-occupant {
+    min-height: 36px;
+  }
+
+  .tokyo-skyline {
+    height: 60px;
+  }
+}

@@ -415,4 +415,107 @@
   .dice-section {
     flex-wrap: wrap;
   }
+
+  .game-header {
+    padding: 8px 12px;
+  }
+
+  .game-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .header-info {
+    gap: 12px;
+    font-size: 0.8rem;
+  }
+
+  .panel {
+    padding: 12px;
+  }
+
+  .dice-section {
+    padding: 12px 8px;
+  }
+
+  .log-section {
+    max-height: 100px;
+  }
+}
+
+/* Setup screen — large phones */
+@media (max-width: 600px) {
+  .setup-content {
+    padding: 24px 16px;
+  }
+
+  .setup-title {
+    font-size: 1.8rem;
+  }
+
+  .btn-count {
+    width: 44px;
+    height: 44px;
+    font-size: 0.95rem;
+  }
+
+  .player-setup-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .player-name-input,
+  .monster-select,
+  .btn-toggle-ai {
+    min-height: 44px;
+  }
+
+  .difficulty-selector,
+  .player-count-selector {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* Setup screen — phone portrait */
+@media (max-width: 430px) {
+  .setup-title {
+    font-size: 1.5rem;
+  }
+
+  .setup-subtitle {
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+  }
+
+  .player-setup-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .player-emoji {
+    align-self: center;
+  }
+
+  .player-name-input,
+  .monster-select {
+    width: 100%;
+  }
+
+  .btn-toggle-ai {
+    align-self: center;
+  }
+
+  .btn-start {
+    min-height: 48px;
+    font-size: 1rem;
+  }
+
+  .dialog {
+    padding: 20px 16px;
+  }
+
+  .winner-emoji svg {
+    width: 60px;
+    height: 60px;
+  }
 }

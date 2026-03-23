@@ -11,6 +11,13 @@ import { tournamentManager } from './engine/TournamentManager.js';
 import { statsTracker } from './engine/StatsTracker.js';
 import { tutorialOverlay } from './ui/TutorialOverlay.js';
 
+// Mobile viewport height fix (avoids 100vh including URL bar)
+function setVH() {
+  document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+}
+setVH();
+window.addEventListener('resize', setVH);
+
 // Initialize tutorial (before setup screen, so auto-show works)
 tutorialOverlay.init();
 

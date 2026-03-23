@@ -154,3 +154,57 @@
 .gameover-actions .btn-setup {
   padding: 10px 24px;
 }
+
+/* Game over — large phones */
+@media (max-width: 600px) {
+  .gameover-screen {
+    padding: 20px 16px;
+  }
+
+  .gameover-winner-name {
+    font-size: 1.4rem;
+  }
+
+  .stats-table,
+  .standings-table {
+    font-size: 0.75rem;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .stats-table th, .stats-table td,
+  .standings-table th, .standings-table td {
+    padding: 4px 3px;
+    white-space: nowrap;
+  }
+
+  .mvp-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Game over — phone portrait */
+@media (max-width: 430px) {
+  .gameover-winner-svg svg {
+    width: 60px;
+    height: 60px;
+  }
+
+  .gameover-winner-name {
+    font-size: 1.2rem;
+  }
+
+  .gameover-actions .btn {
+    min-height: 44px;
+    flex: 1;
+  }
+
+  .mvp-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mvp-card {
+    padding: 8px;
+  }
+}

@@ -143,3 +143,58 @@
 .btn-done:hover {
   box-shadow: var(--neon-green);
 }
+
+/* Touch feedback for buyable cards */
+@media (hover: none) {
+  .store-card.buyable:active {
+    background: rgba(15, 52, 96, 0.7);
+    transform: scale(0.98);
+  }
+}
+
+/* Cards — large phones */
+@media (max-width: 600px) {
+  .card-store-panel {
+    border-left: none;
+  }
+
+  .store-card {
+    padding: 8px 10px;
+  }
+
+  .card-name {
+    font-size: 0.8rem;
+  }
+
+  .card-description {
+    font-size: 0.7rem;
+  }
+
+  .card-cost {
+    font-size: 0.7rem;
+  }
+}
+
+/* Cards — phone portrait */
+@media (max-width: 430px) {
+  .card-slots {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .store-card {
+    min-width: 200px;
+    flex-shrink: 0;
+  }
+
+  .card-actions {
+    flex-wrap: wrap;
+  }
+
+  .card-actions .btn {
+    min-height: 44px;
+  }
+}

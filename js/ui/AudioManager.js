@@ -22,6 +22,7 @@ class AudioManager {
     };
     document.addEventListener('click', unlock);
     document.addEventListener('keydown', unlock);
+    document.addEventListener('touchstart', unlock, { once: true });
 
     // Wire bus events to sounds
     bus.on('dice:rolled', () => this.play('diceRoll'));
