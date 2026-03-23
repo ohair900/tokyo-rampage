@@ -144,6 +144,34 @@
   box-shadow: var(--neon-green);
 }
 
+/* Card breathing animation */
+@keyframes cardBreathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.008); }
+}
+
+.store-card {
+  animation: cardBreathe 4s ease-in-out infinite;
+}
+
+.store-card:nth-child(1) { animation-delay: 0s; }
+.store-card:nth-child(2) { animation-delay: 1.3s; }
+.store-card:nth-child(3) { animation-delay: 2.6s; }
+
+/* Buyable shimmer */
+.store-card.buyable::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(241, 196, 15, 0.05) 50%, transparent 60%);
+  pointer-events: none;
+  border-radius: var(--radius);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .store-card { animation: none; }
+}
+
 /* Touch feedback for buyable cards */
 @media (hover: none) {
   .store-card.buyable:active {

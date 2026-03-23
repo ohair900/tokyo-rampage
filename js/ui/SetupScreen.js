@@ -68,7 +68,7 @@ class SetupScreen {
 
   createPlayerCountSelector() {
     const selector = createElement('div', { className: 'player-count-selector' }, [
-      createElement('label', { textContent: 'Number of Players: ' }),
+      createElement('div', { className: 'setup-section-label', textContent: 'Players' }),
     ]);
 
     for (let n = 2; n <= 6; n++) {
@@ -85,26 +85,35 @@ class SetupScreen {
   }
 
   createDifficultySelector() {
+    const descriptions = {
+      easy: 'Relaxed play, forgiving AI',
+      normal: 'Balanced challenge',
+      hard: 'Ruthless strategy',
+    };
+
     const selector = createElement('div', { className: 'difficulty-selector' }, [
-      createElement('label', { textContent: 'AI Difficulty: ' }),
+      createElement('div', { className: 'setup-section-label', textContent: 'AI Difficulty' }),
     ]);
 
     for (const level of ['easy', 'normal', 'hard']) {
+      const label = level.charAt(0).toUpperCase() + level.slice(1);
       selector.appendChild(createElement('button', {
-        className: `btn btn-count ${level === this.aiDifficulty ? 'selected' : ''}`,
-        textContent: level.charAt(0).toUpperCase() + level.slice(1),
+        className: `btn-difficulty ${level === this.aiDifficulty ? 'selected' : ''}`,
         onClick: () => {
           this.aiDifficulty = level;
           this.render();
         }
-      }));
+      }, [
+        createElement('span', { className: 'difficulty-label', textContent: label }),
+        createElement('span', { className: 'difficulty-desc', textContent: descriptions[level] }),
+      ]));
     }
     return selector;
   }
 
   createGameModeSelector() {
     const selector = createElement('div', { className: 'gamemode-selector' }, [
-      createElement('label', { textContent: 'Game Mode: ' }),
+      createElement('div', { className: 'setup-section-label', textContent: 'Game Mode' }),
     ]);
 
     for (const mode of ['single', 'tournament']) {
@@ -122,7 +131,7 @@ class SetupScreen {
 
   createSeriesSelector() {
     const selector = createElement('div', { className: 'series-selector' }, [
-      createElement('label', { textContent: 'Best of: ' }),
+      createElement('div', { className: 'setup-section-label', textContent: 'Best of' }),
     ]);
 
     for (const n of [3, 5, 7]) {
@@ -148,15 +157,26 @@ class SetupScreen {
         .filter((_, idx) => idx !== i)
         .map(c => c.monster.id);
 
-      const row = createElement('div', { className: 'player-setup-row' }, [
-        createElement('span', { className: 'player-emoji', innerHTML: monsterSVG(config.monster.id, 36) }),
+      const rowChildren = [
+        // Monster portrait preview
+        createElement('div', { className: 'player-monster-preview' }, [
+          createElement('span', { className: 'player-preview-svg', innerHTML: monsterSVG(config.monster.id, 56) }),
+          createElement('span', {
+            className: 'player-preview-name',
+            textContent: config.monster.name,
+            style: { color: config.monster.color }
+          }),
+        ]),
+        // Name input
         createElement('input', {
           className: 'player-name-input',
           type: 'text',
           value: config.name,
           onInput: (e) => { config.name = e.target.value; }
         }),
-        this.createMonsterSelect(i, config, usedMonsters),
+        // Monster picker grid
+        this.createMonsterPicker(i, config, usedMonsters),
+        // AI toggle
         createElement('button', {
           className: `btn btn-toggle-ai ${config.isAI ? 'is-ai' : 'is-human'}`,
           textContent: config.isAI ? 'AI' : 'Human',
@@ -165,44 +185,49 @@ class SetupScreen {
             this.render();
           }
         }),
-      ]);
-      list.appendChild(row);
+      ];
 
-      // Show monster ability below row
+      // Ability info inside the row
       if (config.monster.ability) {
-        const abilityInfo = createElement('div', { className: 'ability-info' }, [
+        rowChildren.push(createElement('div', { className: 'ability-info' }, [
           createElement('strong', { textContent: `${config.monster.ability.name}: ` }),
           document.createTextNode(config.monster.ability.description),
-        ]);
-        list.appendChild(abilityInfo);
+        ]));
       }
+
+      const row = createElement('div', { className: 'player-setup-row' }, rowChildren);
+      list.appendChild(row);
     }
     return list;
   }
 
-  createMonsterSelect(playerIndex, config, usedMonsters) {
-    const select = createElement('select', {
-      className: 'monster-select',
-      onChange: (e) => {
-        const monster = MONSTERS.find(m => m.id === e.target.value);
-        if (monster) {
+  createMonsterPicker(playerIndex, config, usedMonsters) {
+    const grid = createElement('div', { className: 'monster-picker-grid' });
+
+    for (const monster of MONSTERS) {
+      const isSelected = config.monster.id === monster.id;
+      const isUsed = usedMonsters.includes(monster.id);
+
+      let tileClass = 'monster-picker-tile';
+      if (isSelected) tileClass += ' selected';
+      if (isUsed) tileClass += ' disabled';
+
+      const tile = createElement('div', {
+        className: tileClass,
+        style: isSelected ? { '--tile-color': monster.color } : {},
+        title: monster.name,
+        onClick: () => {
+          if (isUsed) return;
           config.monster = monster;
           this.render();
         }
-      }
-    });
+      }, [
+        createElement('span', { innerHTML: monsterSVG(monster.id, 36) }),
+      ]);
 
-    for (const monster of MONSTERS) {
-      const disabled = usedMonsters.includes(monster.id);
-      const option = createElement('option', {
-        value: monster.id,
-        textContent: `${monster.emoji} ${monster.name}`,
-      });
-      if (disabled) option.disabled = true;
-      if (config.monster.id === monster.id) option.selected = true;
-      select.appendChild(option);
+      grid.appendChild(tile);
     }
-    return select;
+    return grid;
   }
 
   startGame() {
@@ -221,17 +246,23 @@ class SetupScreen {
       }
     }
 
-    this.container.classList.add('hidden');
-    bus.emit('setup:complete', {
-      configs,
-      aiDifficulty: this.aiDifficulty,
-      gameMode: this.gameMode,
-      seriesLength: this.seriesLength
-    });
+    // Crossfade transition
+    this.container.classList.add('fade-out');
+    setTimeout(() => {
+      this.container.classList.add('hidden');
+      this.container.classList.remove('fade-out');
+      bus.emit('setup:complete', {
+        configs,
+        aiDifficulty: this.aiDifficulty,
+        gameMode: this.gameMode,
+        seriesLength: this.seriesLength
+      });
+    }, 400);
   }
 
   show() {
     this.container.classList.remove('hidden');
+    this.container.classList.remove('fade-out');
     this.initConfigs();
     this.render();
   }

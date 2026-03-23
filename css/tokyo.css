@@ -126,6 +126,30 @@
   font-style: italic;
 }
 
+/* Tokyo ambient animations */
+@keyframes emptySlotPulse {
+  0%, 100% { border-color: rgba(255, 255, 255, 0.1); }
+  50% { border-color: rgba(255, 255, 255, 0.18); }
+}
+
+.tokyo-slot:not(.occupied):not(.hidden-slot) {
+  animation: emptySlotPulse 4s ease-in-out infinite;
+}
+
+@keyframes skylineFlicker {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.25; }
+}
+
+.tokyo-skyline {
+  animation: skylineFlicker 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tokyo-slot:not(.occupied):not(.hidden-slot),
+  .tokyo-skyline { animation: none; }
+}
+
 /* Tokyo — large phones */
 @media (max-width: 600px) {
   .tokyo-slot {

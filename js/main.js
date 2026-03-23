@@ -28,6 +28,7 @@ setupScreen.init();
 bus.on('setup:complete', ({ configs, aiDifficulty, gameMode, seriesLength }) => {
   const gameArea = document.getElementById('game-area');
   gameArea.classList.remove('hidden');
+  requestAnimationFrame(() => gameArea.classList.add('visible'));
 
   aiController.setDifficulty(aiDifficulty || 'normal');
   renderer.init();
@@ -44,9 +45,12 @@ bus.on('setup:complete', ({ configs, aiDifficulty, gameMode, seriesLength }) => 
 // Listen for new game request (back to setup)
 bus.on('ui:newGame', () => {
   const gameArea = document.getElementById('game-area');
-  gameArea.classList.add('hidden');
-  tournamentManager.reset();
-  setupScreen.show();
+  gameArea.classList.remove('visible');
+  setTimeout(() => {
+    gameArea.classList.add('hidden');
+    tournamentManager.reset();
+    setupScreen.show();
+  }, 400);
 });
 
 // Tournament: next game
@@ -73,9 +77,12 @@ bus.on('ui:nextGame', () => {
 // Tournament: new tournament (back to setup)
 bus.on('ui:newTournament', () => {
   const gameArea = document.getElementById('game-area');
-  gameArea.classList.add('hidden');
-  tournamentManager.reset();
-  setupScreen.show();
+  gameArea.classList.remove('visible');
+  setTimeout(() => {
+    gameArea.classList.add('hidden');
+    tournamentManager.reset();
+    setupScreen.show();
+  }, 400);
 });
 
 // Keyboard shortcuts

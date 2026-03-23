@@ -223,6 +223,8 @@ class Renderer {
         gameOver: 'Game Over',
       };
       phaseEl.textContent = phaseLabels[gameState.phase] || gameState.phase;
+      phaseEl.classList.add('phase-highlight');
+      setTimeout(() => phaseEl.classList.remove('phase-highlight'), 600);
     }
   }
 }
