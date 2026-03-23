@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d0d1a"/>
+      <stop offset="50%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#16213e"/>
+    </linearGradient>
+    <linearGradient id="claw" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#ff5a75"/>
+      <stop offset="100%" stop-color="#e94560"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="skyGlow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" ry="96" fill="url(#bg)"/>
+
+  <!-- Subtle radial glow behind claws -->
+  <circle cx="256" cy="220" r="180" fill="rgba(233,69,96,0.06)"/>
+
+  <!-- Tokyo skyline silhouette at bottom -->
+  <g filter="url(#skyGlow)" opacity="0.25">
+    <path d="M0 512 L0 420 L40 420 L40 390 L55 390 L55 400 L70 400 L70 370 L85 370 L85 400 L100 400 L100 350 L108 345 L116 350 L116 400 L130 400 L130 380 L145 380 L145 400 L160 400 L160 340 L170 340 L170 310 L175 305 L180 310 L180 340 L190 340 L190 400 L210 400 L210 360 L225 360 L225 400 L240 400 L240 320 L248 315 L256 280 L264 315 L272 320 L272 400 L290 400 L290 370 L305 370 L305 400 L320 400 L320 350 L332 345 L344 350 L344 400 L360 400 L360 380 L375 380 L375 400 L390 400 L390 360 L400 355 L410 360 L410 400 L425 400 L425 370 L440 370 L440 400 L455 400 L455 390 L470 390 L470 410 L485 410 L485 420 L512 420 L512 512 Z" fill="#e94560"/>
+  </g>
+
+  <!-- Monster claw marks — 3 diagonal slashes -->
+  <g filter="url(#glow)">
+    <!-- Left slash -->
+    <path d="M140 80 Q155 150 170 220 Q180 260 165 300 L155 310 Q165 265 155 220 Q145 160 135 100 Z" fill="url(#claw)"/>
+    <path d="M140 80 L130 70 Q120 75 135 100 Z" fill="url(#claw)"/>
+
+    <!-- Center slash -->
+    <path d="M240 60 Q255 140 265 210 Q275 260 260 310 L248 320 Q260 270 250 210 Q240 140 230 75 Z" fill="url(#claw)"/>
+    <path d="M240 60 L228 48 Q218 55 230 75 Z" fill="url(#claw)"/>
+
+    <!-- Right slash -->
+    <path d="M340 90 Q355 155 365 225 Q372 265 358 305 L348 315 Q362 268 352 225 Q342 160 334 108 Z" fill="url(#claw)"/>
+    <path d="M340 90 L330 78 Q320 84 334 108 Z" fill="url(#claw)"/>
+  </g>
+
+  <!-- "TOKYO RAMPAGE" text -->
+  <text x="256" y="420" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="48" font-weight="800" letter-spacing="4" fill="#e94560" filter="url(#glow)">TOKYO</text>
+  <text x="256" y="462" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="36" font-weight="600" letter-spacing="6" fill="rgba(224,224,224,0.7)">RAMPAGE</text>
+</svg>
