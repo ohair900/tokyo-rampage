@@ -683,9 +683,12 @@
     margin-bottom: 20px;
   }
 
+  .player-monster-preview {
+    flex-basis: 100%;
+  }
+
   .monster-picker-grid {
     justify-content: center;
-    flex-basis: 100%;
   }
 
   .btn-count,
