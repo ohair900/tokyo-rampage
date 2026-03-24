@@ -273,6 +273,9 @@ class LobbyUI {
         createElement('span', { className: 'player-preview-svg', innerHTML: monsterSVG(monster.id, 44) }),
         createElement('span', { className: 'player-preview-name', textContent: monster.name, style: { color: monster.color } }),
       );
+      if (monster.ability) {
+        previewChildren.push(createElement('span', { className: 'player-preview-ability', textContent: monster.ability.name }));
+      }
     } else {
       previewChildren.push(
         createElement('span', { className: 'player-preview-svg lobby-preview-empty', textContent: '?' }),
