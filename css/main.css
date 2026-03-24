@@ -67,6 +67,10 @@
   box-sizing: border-box;
 }
 
+html {
+  background: #0d0d1a;
+}
+
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: linear-gradient(135deg, #0d0d1a, #1a1a2e, #16213e, #0d0d1a);
@@ -75,6 +79,7 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 @keyframes bgShift {
