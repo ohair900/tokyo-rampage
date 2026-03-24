@@ -61,19 +61,7 @@ class MultiplayerSync {
       // so we just need to tell the server we rerolled.
     });
 
-    // Intercept dice confirm for local player
-    bus.on('dice:confirmed', () => {
-      if (!this.active) return;
-      if (this._isLocalTurn()) {
-        networkAdapter.sendConfirmDice();
-      }
-    });
-
-    // Intercept card purchases for local player
-    bus.on('cards:bought', ({ player }) => {
-      if (!this.active) return;
-      // Already handled by the buy button click
-    });
+    // Note: dice confirm is sent by DiceUI/AIPlayer directly, not intercepted here
 
     // Track when a locally-controlled player (human or host's AI) ends their turn
     bus.on('turn:end', () => {
@@ -108,10 +96,9 @@ class MultiplayerSync {
       bus.emit('dice:keepChanged', { keptDice });
     });
 
-    // Remote player rerolled — server sends new dice
+    // Server sends authoritative dice on every reroll (for all players including local)
     bus.on('net:diceRolled', ({ dice, rerollIndex, playerIndex }) => {
       if (!this.active) return;
-      if (playerIndex === networkAdapter.localPlayerIndex) return; // our rerolls already applied locally
       // Apply the server dice to local state
       const newDice = [...gameState.dice];
       const kept = gameState.keptDice;

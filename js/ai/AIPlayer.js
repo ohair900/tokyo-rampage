@@ -67,8 +67,13 @@ class AIController {
       if (allKept || gameState.rerollsLeft <= 0) break;
 
       await this.delay();
-      if (game.multiplayerAdapter) networkAdapter.sendReroll();
-      reroll();
+      if (game.multiplayerAdapter) {
+        networkAdapter.sendReroll();
+        // Wait for server to respond with authoritative dice
+        await new Promise(resolve => bus.once('dice:rolled', resolve));
+      } else {
+        reroll();
+      }
     }
 
     await this.delay();
