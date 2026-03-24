@@ -266,30 +266,17 @@ class LobbyUI {
     const canEditMonster = isLocal || (isHost && p.isAI);
     const canToggleAI = isHost && !isLocal;
 
-    // Monster preview
-    const previewChildren = [];
-    if (monster) {
-      previewChildren.push(
-        createElement('span', { className: 'player-preview-svg', innerHTML: monsterSVG(monster.id, 44) }),
-        createElement('span', { className: 'player-preview-name', textContent: monster.name, style: { color: monster.color } }),
-      );
-      if (monster.ability) {
-        previewChildren.push(createElement('span', { className: 'player-preview-ability', textContent: `${monster.ability.name}: ${monster.ability.description}` }));
-      }
-    } else {
-      previewChildren.push(
-        createElement('span', { className: 'player-preview-svg lobby-preview-empty', textContent: '?' }),
-        createElement('span', { className: 'player-preview-name', textContent: 'Pick' }),
-      );
-    }
-    const preview = createElement('div', { className: 'player-monster-preview' }, previewChildren);
+    // SVG
+    const svgEl = monster
+      ? createElement('span', { className: 'player-preview-svg', innerHTML: monsterSVG(monster.id, 36) })
+      : createElement('span', { className: 'player-preview-svg lobby-preview-empty', textContent: '?' });
 
-    // Name input
-    let nameEl;
+    // Info: name + ability
+    const infoChildren = [];
     if (isOpen) {
-      nameEl = createElement('div', { className: 'player-name-input lobby-open-slot', textContent: 'Waiting for player...' });
+      infoChildren.push(createElement('div', { className: 'player-name-input lobby-open-slot', textContent: 'Waiting for player...' }));
     } else if (canEditName) {
-      nameEl = createElement('input', {
+      infoChildren.push(createElement('input', {
         className: 'player-name-input',
         type: 'text',
         value: p.name,
@@ -300,13 +287,21 @@ class LobbyUI {
             networkAdapter.sendSetSlotName(p.index, e.target.value);
           }
         }
-      });
+      }));
     } else {
-      nameEl = createElement('div', {
+      infoChildren.push(createElement('div', {
         className: 'player-name-input lobby-readonly-name',
         textContent: p.name + (p.index === this.hostIndex ? ' (Host)' : ''),
-      });
+      }));
     }
+    if (monster && monster.ability) {
+      infoChildren.push(createElement('span', { className: 'player-preview-ability', textContent: `${monster.ability.name}: ${monster.ability.description}` }));
+    }
+
+    const preview = createElement('div', { className: 'player-monster-preview' }, [
+      svgEl,
+      createElement('div', { className: 'player-preview-info' }, infoChildren),
+    ]);
 
     // Monster picker (compact grid)
     const pickerGrid = createElement('div', { className: 'monster-picker-grid' });
@@ -351,7 +346,7 @@ class LobbyUI {
       toggleEl = createElement('span', { className: 'lobby-player-status-badge lobby-you-badge', textContent: 'You' });
     }
 
-    const rowChildren = [preview, nameEl, pickerGrid];
+    const rowChildren = [preview, pickerGrid];
     if (toggleEl) rowChildren.push(toggleEl);
 
     return createElement('div', {

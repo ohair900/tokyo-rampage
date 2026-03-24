@@ -224,30 +224,26 @@ class SetupScreen {
         .filter((_, idx) => idx !== i)
         .map(c => c.monster.id);
 
-      const previewChildren = [
-        createElement('span', { className: 'player-preview-svg', innerHTML: monsterSVG(config.monster.id, 44) }),
-        createElement('span', {
-          className: 'player-preview-name',
-          textContent: config.monster.name,
-          style: { color: config.monster.color }
-        }),
-      ];
-      if (config.monster.ability) {
-        previewChildren.push(createElement('span', {
-          className: 'player-preview-ability',
-          textContent: `${config.monster.ability.name}: ${config.monster.ability.description}`,
-        }));
-      }
-
-      const row = createElement('div', { className: 'player-setup-row' }, [
-        createElement('div', { className: 'player-monster-preview' }, previewChildren),
-        // Name input
+      const infoChildren = [
         createElement('input', {
           className: 'player-name-input',
           type: 'text',
           value: config.name,
           onInput: (e) => { config.name = e.target.value; }
         }),
+      ];
+      if (config.monster.ability) {
+        infoChildren.push(createElement('span', {
+          className: 'player-preview-ability',
+          textContent: `${config.monster.ability.name}: ${config.monster.ability.description}`,
+        }));
+      }
+
+      const row = createElement('div', { className: 'player-setup-row' }, [
+        createElement('div', { className: 'player-monster-preview' }, [
+          createElement('span', { className: 'player-preview-svg', innerHTML: monsterSVG(config.monster.id, 36) }),
+          createElement('div', { className: 'player-preview-info' }, infoChildren),
+        ]),
         // Monster picker grid
         this.createMonsterPicker(i, config, usedMonsters),
         // AI toggle
