@@ -95,6 +95,25 @@
   box-shadow: var(--neon-red);
 }
 
+.btn-gamemode {
+  flex: 1;
+  height: auto;
+  width: auto;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--bg-card), #0a2440);
+  border: 1px solid var(--glass-border);
+}
+
+.btn-gamemode.selected {
+  background: linear-gradient(135deg, #e94560, #c0392b);
+  border-color: var(--accent);
+  box-shadow: var(--neon-red);
+}
+
 .difficulty-selector {
   display: flex;
   align-items: center;
@@ -111,11 +130,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
   gap: 2px;
   padding: 10px 12px;
   min-width: 0;
   flex: 1 1 0;
-  max-width: 160px;
   border-radius: var(--radius);
   background: linear-gradient(135deg, var(--bg-card), #0a2440);
   border: 1px solid var(--glass-border);
@@ -144,6 +163,10 @@
   font-size: 0.65rem;
   font-weight: 400;
   opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 /* Game mode selector */
@@ -303,8 +326,10 @@
 
 .btn-toggle-ai {
   padding: 6px 12px;
-  min-width: 65px;
+  min-width: 60px;
+  height: 36px;
   font-size: 0.8rem;
+  text-align: center;
 }
 
 .btn-toggle-ai.is-human {
@@ -674,6 +699,13 @@
 
   .btn-toggle-ai {
     align-self: center;
+  }
+
+  .btn-count,
+  .btn-gamemode,
+  .btn-difficulty,
+  .btn-toggle-ai {
+    min-height: 44px;
   }
 
   .btn-start {

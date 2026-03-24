@@ -174,7 +174,7 @@ class SetupScreen {
 
     for (const mode of ['single', 'tournament']) {
       selector.appendChild(createElement('button', {
-        className: `btn btn-count ${mode === this.gameMode ? 'selected' : ''}`,
+        className: `btn btn-gamemode ${mode === this.gameMode ? 'selected' : ''}`,
         textContent: mode === 'single' ? 'Single Game' : 'Tournament',
         onClick: () => {
           this.gameMode = mode;
@@ -186,7 +186,7 @@ class SetupScreen {
     }
     // Online multiplayer button
     selector.appendChild(createElement('button', {
-      className: 'btn btn-count',
+      className: 'btn btn-gamemode',
       textContent: 'Online',
       onClick: () => bus.emit('setup:multiplayer'),
     }));
