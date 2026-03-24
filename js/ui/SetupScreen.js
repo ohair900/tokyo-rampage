@@ -224,29 +224,17 @@ class SetupScreen {
         .filter((_, idx) => idx !== i)
         .map(c => c.monster.id);
 
-      const infoChildren = [
-        createElement('input', {
-          className: 'player-name-input',
-          type: 'text',
-          value: config.name,
-          onInput: (e) => { config.name = e.target.value; }
-        }),
-      ];
-      if (config.monster.ability) {
-        infoChildren.push(createElement('span', {
-          className: 'player-preview-ability',
-          textContent: `${config.monster.ability.name}: ${config.monster.ability.description}`,
-        }));
-      }
-
-      const row = createElement('div', { className: 'player-setup-row' }, [
+      const rowChildren = [
         createElement('div', { className: 'player-monster-preview' }, [
           createElement('span', { className: 'player-preview-svg', innerHTML: monsterSVG(config.monster.id, 36) }),
-          createElement('div', { className: 'player-preview-info' }, infoChildren),
+          createElement('input', {
+            className: 'player-name-input',
+            type: 'text',
+            value: config.name,
+            onInput: (e) => { config.name = e.target.value; }
+          }),
         ]),
-        // Monster picker grid
         this.createMonsterPicker(i, config, usedMonsters),
-        // AI toggle
         createElement('button', {
           className: `btn btn-toggle-ai ${config.isAI ? 'is-ai' : 'is-human'}`,
           textContent: config.isAI ? 'AI' : 'Human',
@@ -262,8 +250,14 @@ class SetupScreen {
             this.updatePlayerList();
           }
         }),
-      ]);
-      list.appendChild(row);
+      ];
+      if (config.monster.ability) {
+        rowChildren.push(createElement('span', {
+          className: 'player-preview-ability',
+          textContent: `${config.monster.ability.name}: ${config.monster.ability.description}`,
+        }));
+      }
+      list.appendChild(createElement('div', { className: 'player-setup-row' }, rowChildren));
     }
     return list;
   }

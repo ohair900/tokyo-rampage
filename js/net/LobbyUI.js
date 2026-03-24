@@ -271,12 +271,12 @@ class LobbyUI {
       ? createElement('span', { className: 'player-preview-svg', innerHTML: monsterSVG(monster.id, 36) })
       : createElement('span', { className: 'player-preview-svg lobby-preview-empty', textContent: '?' });
 
-    // Info: name + ability
-    const infoChildren = [];
+    // Name element
+    let nameEl;
     if (isOpen) {
-      infoChildren.push(createElement('div', { className: 'player-name-input lobby-open-slot', textContent: 'Waiting for player...' }));
+      nameEl = createElement('div', { className: 'player-name-input lobby-open-slot', textContent: 'Waiting for player...' });
     } else if (canEditName) {
-      infoChildren.push(createElement('input', {
+      nameEl = createElement('input', {
         className: 'player-name-input',
         type: 'text',
         value: p.name,
@@ -287,21 +287,15 @@ class LobbyUI {
             networkAdapter.sendSetSlotName(p.index, e.target.value);
           }
         }
-      }));
+      });
     } else {
-      infoChildren.push(createElement('div', {
+      nameEl = createElement('div', {
         className: 'player-name-input lobby-readonly-name',
         textContent: p.name + (p.index === this.hostIndex ? ' (Host)' : ''),
-      }));
-    }
-    if (monster && monster.ability) {
-      infoChildren.push(createElement('span', { className: 'player-preview-ability', textContent: `${monster.ability.name}: ${monster.ability.description}` }));
+      });
     }
 
-    const preview = createElement('div', { className: 'player-monster-preview' }, [
-      svgEl,
-      createElement('div', { className: 'player-preview-info' }, infoChildren),
-    ]);
+    const preview = createElement('div', { className: 'player-monster-preview' }, [svgEl, nameEl]);
 
     // Monster picker (compact grid)
     const pickerGrid = createElement('div', { className: 'monster-picker-grid' });
@@ -348,6 +342,9 @@ class LobbyUI {
 
     const rowChildren = [preview, pickerGrid];
     if (toggleEl) rowChildren.push(toggleEl);
+    if (monster && monster.ability) {
+      rowChildren.push(createElement('span', { className: 'player-preview-ability', textContent: `${monster.ability.name}: ${monster.ability.description}` }));
+    }
 
     return createElement('div', {
       className: `player-setup-row ${isLocal ? 'lobby-row-local' : ''} ${isOpen ? 'lobby-row-open' : ''}`,
