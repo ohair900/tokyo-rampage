@@ -165,8 +165,12 @@ class MultiplayerSync {
       networkAdapter.serverDice = initialDice;
 
       if (this._localEndedTurn) {
-        // We initiated this turn end, already advanced locally
+        // We initiated this turn end and already advanced locally,
+        // but startRolling() used stale serverDice. Re-apply correct dice.
         this._localEndedTurn = false;
+        gameState.dice = [...initialDice];
+        gameState.keptDice = new Array(initialDice.length).fill(false);
+        bus.emit('dice:rolled', { dice: gameState.dice, rerollsLeft: gameState.rerollsLeft });
       } else {
         // Remote player ended their turn, advance the game
         game.endBuyPhase();
