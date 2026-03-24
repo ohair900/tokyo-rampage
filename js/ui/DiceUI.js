@@ -164,8 +164,10 @@ class DiceUI {
     if (gameState.phase !== PHASES.ROLLING || this.animating) return;
     if (game.multiplayerAdapter) {
       networkAdapter.sendReroll();
-      // Don't call reroll() locally — server will respond with s:diceRolled
-      // which applies authoritative dice via MultiplayerSync
+      // Disable buttons until server responds with s:diceRolled → animation
+      this.animating = true;
+      this.rollBtn.disabled = true;
+      this.confirmBtn.disabled = true;
       return;
     }
     reroll();

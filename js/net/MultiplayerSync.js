@@ -14,13 +14,14 @@ import { game } from '../engine/Game.js';
 import { toggleKeep, reroll, confirmDice } from '../engine/Dice.js';
 import { buyCard, sweepStore } from '../engine/Cards.js';
 import { healPlayer, spendEnergy } from '../state/actions.js';
-import { MAX_HP } from '../data/constants.js';
+import { MAX_HP, PHASES } from '../data/constants.js';
 import { networkAdapter } from './NetworkAdapter.js';
 
 class MultiplayerSync {
   constructor() {
     this.active = false;
     this._localEndedTurn = false;
+    this._pendingTurnAdvance = null;
   }
 
   /**
@@ -31,6 +32,7 @@ class MultiplayerSync {
     if (this.active) return;
     this.active = true;
     this._localEndedTurn = false;
+    this._pendingTurnAdvance = null;
     this._setupLocalInterceptors();
     this._setupRemoteHandlers();
   }
@@ -171,10 +173,20 @@ class MultiplayerSync {
         gameState.dice = [...initialDice];
         gameState.keptDice = new Array(initialDice.length).fill(false);
         bus.emit('dice:rolled', { dice: gameState.dice, rerollsLeft: gameState.rerollsLeft });
-      } else {
-        // Remote player ended their turn, advance the game
+      } else if (gameState.phase === PHASES.BUYING || gameState.phase === PHASES.END_TURN) {
+        // Remote player ended buying, we're already past dice resolution — advance now
         game.endBuyPhase();
+      } else {
+        // resolveDice() hasn't reached buying phase yet — defer until it does
+        this._pendingTurnAdvance = true;
       }
+    });
+
+    // Apply deferred turn advance once buying phase is reached
+    bus.on('phase:buying', () => {
+      if (!this.active || !this._pendingTurnAdvance) return;
+      this._pendingTurnAdvance = null;
+      game.endBuyPhase();
     });
   }
 
