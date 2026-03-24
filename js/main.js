@@ -138,6 +138,7 @@ bus.on('net:gameStart', (msg) => {
         };
       });
 
+      aiController.setDifficulty(msg.aiDifficulty || 'normal');
       game.setMultiplayerAdapter(networkAdapter);
       multiplayerSync.enable();
       game.initGame(configs, POWER_CARDS, msg.cardDeckSeed);

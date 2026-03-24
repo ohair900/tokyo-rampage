@@ -154,12 +154,24 @@ class NetworkAdapter {
     this.send({ type: 'c:endBuy' });
   }
 
-  sendAddAI(name) {
-    this.send({ type: 'c:addAI', name });
+  sendSetPlayerCount(count) {
+    this.send({ type: 'c:setPlayerCount', count });
   }
 
-  sendRemoveAI(playerIndex) {
-    this.send({ type: 'c:removeAI', playerIndex });
+  sendSetSlotType(playerIndex, slotType) {
+    this.send({ type: 'c:setSlotType', playerIndex, slotType });
+  }
+
+  sendSetSlotMonster(playerIndex, monsterId) {
+    this.send({ type: 'c:setSlotMonster', playerIndex, monsterId });
+  }
+
+  sendSetSlotName(playerIndex, name) {
+    this.send({ type: 'c:setSlotName', playerIndex, name });
+  }
+
+  sendUpdateName(name) {
+    this.send({ type: 'c:updateName', name });
   }
 
   sendGameOver(winnerIndex) {

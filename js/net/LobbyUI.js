@@ -10,6 +10,7 @@ class LobbyUI {
     this.mode = null; // 'create' or 'join'
     this.players = [];
     this.hostIndex = 0;
+    this.aiDifficulty = 'normal';
   }
 
   init(container) {
@@ -23,7 +24,6 @@ class LobbyUI {
       this.hostIndex = msg.hostIndex;
       this._renderLobby();
     });
-    bus.on('net:playerJoined', () => {}); // lobbyUpdate handles it
     bus.on('net:playerDisconnected', (msg) => {
       bus.emit('net:lobbyMessage', { text: `Player ${msg.playerIndex} disconnected` });
     });
@@ -94,9 +94,9 @@ class LobbyUI {
           try {
             await networkAdapter.connect();
             statusDiv.textContent = 'Creating room...';
-            const result = await networkAdapter.createRoom(name);
+            await networkAdapter.createRoom(name);
             this.mode = 'create';
-            this._renderLobby();
+            // _renderLobby will be called by net:lobbyUpdate
           } catch (e) {
             statusDiv.textContent = `Error: ${e.message}`;
           }
@@ -157,7 +157,7 @@ class LobbyUI {
             statusDiv.textContent = 'Joining room...';
             await networkAdapter.joinRoom(code, name);
             this.mode = 'join';
-            this._renderLobby();
+            // _renderLobby will be called by net:lobbyUpdate
           } catch (e) {
             statusDiv.textContent = `Error: ${e.message}`;
           }
@@ -176,40 +176,17 @@ class LobbyUI {
     clearElement(this.container);
     const isHost = networkAdapter.localPlayerIndex === this.hostIndex;
     const shareUrl = `${location.origin}${location.pathname}?room=${networkAdapter.roomCode}`;
-
-    const playerList = createElement('div', { className: 'lobby-player-list' });
-    for (const p of this.players) {
-      const isLocal = p.index === networkAdapter.localPlayerIndex;
-      const entryChildren = [
-        createElement('span', {
-          className: 'lobby-player-name',
-          textContent: p.name + (p.index === this.hostIndex ? ' (Host)' : '') + (p.isAI ? ' [AI]' : ''),
-        }),
-        createElement('span', {
-          className: 'lobby-player-status',
-          textContent: p.isAI ? 'AI' : (p.connected ? 'Ready' : 'Disconnected'),
-        }),
-      ];
-      if (isHost && p.isAI) {
-        entryChildren.push(createElement('button', {
-          className: 'btn btn-secondary lobby-remove-ai',
-          textContent: 'X',
-          onClick: () => networkAdapter.sendRemoveAI(p.index),
-        }));
-      }
-      const entry = createElement('div', {
-        className: `lobby-player ${isLocal ? 'lobby-player-local' : ''} ${!p.connected && !p.isAI ? 'lobby-player-disconnected' : ''} ${p.isAI ? 'lobby-player-ai' : ''}`,
-      }, entryChildren);
-      playerList.appendChild(entry);
-    }
+    const playerCount = this.players.length;
+    const usedMonsters = this.players.filter(p => p.monsterId).map(p => p.monsterId);
 
     const children = [
-      createElement('h1', { className: 'setup-title', textContent: 'Game Lobby' }),
-      createElement('div', { className: 'lobby-room-code' }, [
-        createElement('div', { className: 'setup-section-label', textContent: 'Room Code' }),
-        createElement('div', { className: 'lobby-code-display', textContent: networkAdapter.roomCode }),
-      ]),
-      createElement('div', { className: 'lobby-share' }, [
+      createElement('h1', { className: 'setup-title', textContent: 'Tokyo Rampage' }),
+      // Room code + share
+      createElement('div', { className: 'lobby-room-header' }, [
+        createElement('div', { className: 'lobby-room-code' }, [
+          createElement('span', { className: 'setup-section-label', textContent: 'Room ' }),
+          createElement('span', { className: 'lobby-code-inline', textContent: networkAdapter.roomCode }),
+        ]),
         createElement('button', {
           className: 'btn btn-secondary lobby-share-btn',
           textContent: 'Copy Link',
@@ -221,28 +198,49 @@ class LobbyUI {
           },
         }),
       ]),
-      createElement('div', { className: 'setup-section-label', textContent: `Players (${this.players.length}/6)` }),
-      playerList,
     ];
 
+    // Player count selector (host only)
     if (isHost) {
-      if (this.players.length < 6) {
-        children.push(createElement('button', {
-          className: 'btn btn-secondary lobby-btn',
-          textContent: '+ Add AI Player',
-          onClick: () => networkAdapter.sendAddAI(),
+      const countSelector = createElement('div', { className: 'player-count-selector' }, [
+        createElement('div', { className: 'setup-section-label', textContent: 'Players' }),
+      ]);
+      for (let n = 2; n <= 6; n++) {
+        countSelector.appendChild(createElement('button', {
+          className: `btn btn-count ${n === playerCount ? 'selected' : ''}`,
+          textContent: String(n),
+          onClick: () => networkAdapter.sendSetPlayerCount(n),
         }));
       }
+      children.push(countSelector);
+    }
+
+    // Player list (setup-screen style)
+    const list = createElement('div', { className: 'player-list' });
+    for (let i = 0; i < this.players.length; i++) {
+      list.appendChild(this._createPlayerRow(i, usedMonsters));
+    }
+    children.push(list);
+
+    // AI Difficulty (host only, if any AI)
+    if (isHost && this.players.some(p => p.isAI)) {
+      children.push(this._createDifficultySelector());
+    }
+
+    // Start / waiting
+    if (isHost) {
+      const hasOpenSlots = this.players.some(p => p.isOpen);
       children.push(createElement('button', {
         className: 'btn btn-start lobby-btn',
-        textContent: 'Start Game',
-        ...(this.players.filter(p => p.connected || p.isAI).length < 2 ? { disabled: 'disabled' } : {}),
-        onClick: () => networkAdapter.startGame(),
+        textContent: hasOpenSlots ? 'Waiting for Players...' : 'Start Game!',
+        ...(hasOpenSlots || this.players.length < 2 ? { disabled: 'disabled' } : {}),
+        onClick: () => networkAdapter.send({ type: 'c:start', aiDifficulty: this.aiDifficulty }),
       }));
     } else {
       children.push(createElement('div', { className: 'lobby-status', textContent: 'Waiting for host to start...' }));
     }
 
+    // Leave
     children.push(createElement('button', {
       className: 'btn btn-secondary',
       textContent: 'Leave',
@@ -254,6 +252,135 @@ class LobbyUI {
 
     const screen = createElement('div', { className: 'setup-content lobby-content' }, children);
     this.container.appendChild(screen);
+  }
+
+  _createPlayerRow(index, usedMonsters) {
+    const p = this.players[index];
+    const isHost = networkAdapter.localPlayerIndex === this.hostIndex;
+    const isLocal = p.index === networkAdapter.localPlayerIndex;
+    const isOpen = p.isOpen;
+    const monster = p.monsterId ? MONSTERS.find(m => m.id === p.monsterId) : null;
+
+    // Can this user edit this row?
+    const canEditName = isLocal || (isHost && p.isAI);
+    const canEditMonster = isLocal || (isHost && p.isAI);
+    const canToggleAI = isHost && !isLocal;
+
+    // Monster preview
+    const previewChildren = [];
+    if (monster) {
+      previewChildren.push(
+        createElement('span', { className: 'player-preview-svg', innerHTML: monsterSVG(monster.id, 44) }),
+        createElement('span', { className: 'player-preview-name', textContent: monster.name, style: { color: monster.color } }),
+      );
+    } else {
+      previewChildren.push(
+        createElement('span', { className: 'player-preview-svg lobby-preview-empty', textContent: '?' }),
+        createElement('span', { className: 'player-preview-name', textContent: 'Pick' }),
+      );
+    }
+    const preview = createElement('div', { className: 'player-monster-preview' }, previewChildren);
+
+    // Name input
+    let nameEl;
+    if (isOpen) {
+      nameEl = createElement('div', { className: 'player-name-input lobby-open-slot', textContent: 'Waiting for player...' });
+    } else if (canEditName) {
+      nameEl = createElement('input', {
+        className: 'player-name-input',
+        type: 'text',
+        value: p.name,
+        onInput: (e) => {
+          if (isLocal) {
+            networkAdapter.sendUpdateName(e.target.value);
+          } else if (isHost && p.isAI) {
+            networkAdapter.sendSetSlotName(p.index, e.target.value);
+          }
+        }
+      });
+    } else {
+      nameEl = createElement('div', {
+        className: 'player-name-input lobby-readonly-name',
+        textContent: p.name + (p.index === this.hostIndex ? ' (Host)' : ''),
+      });
+    }
+
+    // Monster picker (compact grid)
+    const pickerGrid = createElement('div', { className: 'monster-picker-grid' });
+    if (canEditMonster && !isOpen) {
+      const otherMonsters = usedMonsters.filter(m => m !== p.monsterId);
+      for (const m of MONSTERS) {
+        const isSelected = p.monsterId === m.id;
+        const isUsed = otherMonsters.includes(m.id);
+        const tile = createElement('div', {
+          className: `monster-picker-tile ${isSelected ? 'selected' : ''} ${isUsed ? 'disabled' : ''}`,
+          style: isSelected ? { '--tile-color': m.color } : {},
+          title: m.name,
+          onClick: () => {
+            if (isUsed) return;
+            if (isLocal) {
+              networkAdapter.updateMonster(m.id);
+            } else if (isHost && p.isAI) {
+              networkAdapter.sendSetSlotMonster(p.index, m.id);
+            }
+          }
+        }, [createElement('span', { innerHTML: monsterSVG(m.id, 28) })]);
+        pickerGrid.appendChild(tile);
+      }
+    }
+
+    // AI/Human toggle (host only, not own slot)
+    let toggleEl = null;
+    if (canToggleAI) {
+      if (p.connected && !p.isAI) {
+        // Connected human player — show status, can't toggle
+        toggleEl = createElement('span', { className: 'lobby-player-status-badge', textContent: 'Online' });
+      } else {
+        toggleEl = createElement('button', {
+          className: `btn btn-toggle-ai ${p.isAI ? 'is-ai' : 'is-human'}`,
+          textContent: p.isAI ? 'AI' : 'Human',
+          onClick: () => {
+            networkAdapter.sendSetSlotType(p.index, p.isAI ? 'human' : 'ai');
+          }
+        });
+      }
+    } else if (isLocal) {
+      toggleEl = createElement('span', { className: 'lobby-player-status-badge lobby-you-badge', textContent: 'You' });
+    }
+
+    const rowChildren = [preview, nameEl, pickerGrid];
+    if (toggleEl) rowChildren.push(toggleEl);
+
+    return createElement('div', {
+      className: `player-setup-row ${isLocal ? 'lobby-row-local' : ''} ${isOpen ? 'lobby-row-open' : ''}`,
+    }, rowChildren);
+  }
+
+  _createDifficultySelector() {
+    const descriptions = {
+      easy: 'Relaxed play, forgiving AI',
+      normal: 'Balanced challenge',
+      hard: 'Ruthless strategy',
+    };
+
+    const selector = createElement('div', { className: 'difficulty-selector' }, [
+      createElement('div', { className: 'setup-section-label', textContent: 'AI Difficulty' }),
+    ]);
+
+    for (const level of ['easy', 'normal', 'hard']) {
+      const label = level.charAt(0).toUpperCase() + level.slice(1);
+      selector.appendChild(createElement('button', {
+        className: `btn-difficulty ${level === this.aiDifficulty ? 'selected' : ''}`,
+        onClick: () => {
+          this.aiDifficulty = level;
+          this._renderLobby();
+        }
+      }, [
+        createElement('span', { className: 'difficulty-label', textContent: label }),
+        createElement('span', { className: 'difficulty-desc', textContent: descriptions[level] }),
+      ]));
+    }
+    return selector;
   }
 
   _showError(message) {
