@@ -235,7 +235,7 @@ class SetupScreen {
       if (config.monster.ability) {
         previewChildren.push(createElement('span', {
           className: 'player-preview-ability',
-          textContent: config.monster.ability.name,
+          textContent: `${config.monster.ability.name}: ${config.monster.ability.description}`,
         }));
       }
 

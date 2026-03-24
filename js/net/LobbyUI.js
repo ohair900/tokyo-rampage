@@ -274,7 +274,7 @@ class LobbyUI {
         createElement('span', { className: 'player-preview-name', textContent: monster.name, style: { color: monster.color } }),
       );
       if (monster.ability) {
-        previewChildren.push(createElement('span', { className: 'player-preview-ability', textContent: monster.ability.name }));
+        previewChildren.push(createElement('span', { className: 'player-preview-ability', textContent: `${monster.ability.name}: ${monster.ability.description}` }));
       }
     } else {
       previewChildren.push(
