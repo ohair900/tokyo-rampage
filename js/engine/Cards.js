@@ -30,12 +30,13 @@ export function buyCard(player, cardIndex) {
     player.cards.push(card);
   }
 
-  bus.emit('cards:bought', { player, card });
-
-  // Apply immediate/discard effects
+  // Apply immediate/discard effects before emitting cards:bought
+  // so the UI sees the updated state (e.g. Even Bigger HP increase)
   if (card.onBuy) {
     card.onBuy(player, gameState);
   }
+
+  bus.emit('cards:bought', { player, card });
 
   refillStore();
   return true;

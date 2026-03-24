@@ -1,7 +1,7 @@
 import { gameState } from './GameState.js';
 import { bus } from '../utils/eventBus.js';
 import { MAX_HP, WIN_VP } from '../data/constants.js';
-import { rollDie } from '../utils/random.js';
+import { rollDie, deterministicRollDie } from '../utils/random.js';
 
 export function hasCard(player, name) {
   return player.cards.some(c => c.name === name);
@@ -42,9 +42,13 @@ export function dealDamage(attacker, target, amount) {
 
   // Camouflage: roll a die, ignore all damage on heart
   if (hasCard(target, 'Camouflage')) {
-    const roll = rollDie();
-    bus.emit('card:camouflage', { player: target, roll });
-    if (roll === 'heart') return;
+    const seed = gameState.round * 1000 + target.id * 100 + amount;
+    const roll = deterministicRollDie(seed);
+    if (roll === 'heart') {
+      bus.emit('ability:triggered', { player: target, ability: { name: 'Camouflage' }, detail: `Rolled ${roll} — damage blocked!` });
+      return;
+    }
+    bus.emit('ability:triggered', { player: target, ability: { name: 'Camouflage' }, detail: `Rolled ${roll} — no block` });
   }
 
   target.hp = Math.max(0, target.hp - amount);

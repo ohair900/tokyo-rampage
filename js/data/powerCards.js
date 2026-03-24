@@ -1,5 +1,6 @@
 import { addVP, addEnergy, healPlayer, dealDamage } from '../state/actions.js';
 import { MAX_HP } from './constants.js';
+import { deterministicIndex } from '../utils/random.js';
 
 // Card types: 'keep' = permanent, 'discard' = immediate effect
 export const POWER_CARDS = [
@@ -113,7 +114,8 @@ export const POWER_CARDS = [
     onBuy: (p, gs) => {
       const targets = gs.players.filter(o => o !== p && o.alive && !o.inTokyo);
       if (targets.length > 0) {
-        const target = targets[Math.floor(Math.random() * targets.length)];
+        const seed = (gs.round || 1) * 1000 + p.id;
+        const target = targets[deterministicIndex(seed, targets.length)];
         dealDamage(p, target, 4);
       }
     }

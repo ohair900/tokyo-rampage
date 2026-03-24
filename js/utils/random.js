@@ -15,6 +15,18 @@ export function rollDice(count) {
   return Array.from({ length: count }, () => rollDie());
 }
 
+// Deterministic die roll from a seed (same seed = same result on all clients)
+export function deterministicRollDie(seed) {
+  const s = ((seed * 1664525 + 1013904223) & 0x7fffffff) / 0x7fffffff;
+  return DICE_FACES[Math.floor(s * DICE_FACES.length)];
+}
+
+// Deterministic index selection from a seed
+export function deterministicIndex(seed, length) {
+  const s = ((seed * 1664525 + 1013904223) & 0x7fffffff) / 0x7fffffff;
+  return Math.floor(s * length);
+}
+
 // Seeded PRNG for deterministic card deck shuffle in multiplayer
 function seededRandom(seed) {
   let s = seed;
