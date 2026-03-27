@@ -1,11 +1,11 @@
 import { gameState, createPlayerState } from '../state/GameState.js';
 import { bus } from '../utils/eventBus.js';
-import { PHASES, WIN_VP, MAX_HP } from '../data/constants.js';
-import { startRolling, confirmDice, countDice } from './Dice.js';
+import { PHASES, WIN_VP } from '../data/constants.js';
+import { startRolling, countDice } from './Dice.js';
 import { resolveAttack } from './Combat.js';
 import { resolveVP } from './Scoring.js';
 import { awardTokyoStartVP, tryEnterTokyo, handleYield } from './Tokyo.js';
-import { addEnergy, healPlayer, addVP, hasCard, dealDamage, spendEnergy } from '../state/actions.js';
+import { addEnergy, healPlayer, addVP, hasCard, dealDamage } from '../state/actions.js';
 import { initCardStore, refillStore } from './Cards.js';
 import { statsTracker } from './StatsTracker.js';
 
@@ -65,8 +65,10 @@ class Game {
     gameState.phase = PHASES.START_TURN;
     bus.emit('turn:start', { player, round: gameState.round });
 
-    // Initialize damage tracking for Poison Spit
-    player._damagedThisTurn = new Set();
+    // Reset turn-scoped bookkeeping
+    player._damagedOpponentsThisTurn = new Set();
+    player._dealtOpponentDamageThisTurn = false;
+    gameState.reactionCounter = 0;
 
     // Meka Dragon: reset shield at own turn start
     if (player.monster.id === 'mekadragon') player._shieldActive = true;
@@ -85,8 +87,7 @@ class Game {
 
     // Keep card: Regeneration — heal 1 even in Tokyo
     if (hasCard(player, 'Regeneration')) {
-      player.hp = Math.min(player.hp + 1, player.maxHP || MAX_HP);
-      bus.emit('player:healed', { player, amount: 1 });
+      healPlayer(player, 1, { allowInTokyo: true });
     }
 
     // Check win after VP award
@@ -115,27 +116,20 @@ class Game {
     if (this.checkWin()) return;
 
     // 2. Energy from lightning
-    const lightning = counts['lightning'] || 0;
+    const lightning = counts.lightning || 0;
     if (lightning > 0) {
       addEnergy(player, lightning);
     }
 
     // 3. Attack with claws
-    const rawClaws = counts['claw'] || 0;
+    const rawClaws = counts.claw || 0;
     let claws = rawClaws;
-    // Gigazaur: Frenzy — 3+ claws grants +1 damage
     if (player.monster.id === 'gigazaur' && claws >= 3) {
       claws += 1;
       bus.emit('ability:triggered', { player, ability: player.monster.ability, detail: '+1 bonus claw damage' });
     }
     if (claws > 0) {
       await resolveAttack(player, claws);
-      if (this.checkWin()) return;
-    }
-
-    // Keep card: Herbivore — +1 VP if no claws dealt
-    if (rawClaws === 0 && hasCard(player, 'Herbivore')) {
-      addVP(player, 1);
       if (this.checkWin()) return;
     }
 
@@ -148,16 +142,16 @@ class Game {
       }
     }
 
-    // 4. If not in Tokyo, try to enter (Tokyo may be empty or yielded)
-    if (!player.inTokyo && player.alive) {
-      tryEnterTokyo(player);
-      if (this.checkWin()) return;
-    }
-
-    // 5. Heal with hearts (not in Tokyo)
-    const hearts = counts['heart'] || 0;
+    // 4. Heal with hearts before possible Tokyo entry
+    const hearts = counts.heart || 0;
     if (hearts > 0) {
       healPlayer(player, hearts);
+    }
+
+    // 5. If still outside Tokyo, try to enter after healing
+    if (claws > 0 && !player.inTokyo && player.alive) {
+      tryEnterTokyo(player);
+      if (this.checkWin()) return;
     }
 
     // Opportunist (id 45): if 0 hearts rolled, gain 1 energy
@@ -165,7 +159,6 @@ class Game {
       addEnergy(player, 1);
     }
 
-    // Move to buying phase
     this.startBuyPhase();
   }
 
@@ -174,16 +167,7 @@ class Game {
       gameState.phase = PHASES.BUYING;
       const player = gameState.currentPlayer;
 
-      // Made in a Lab (id 50): draw 1 extra card into store
-      if (hasCard(player, 'Made in a Lab')) {
-        refillStore(); // will add card if store < CARD_STORE_SIZE, but also try adding one more
-        if (gameState.cardDeck.length > 0) {
-          gameState.cardStore = [...gameState.cardStore, gameState.cardDeck.pop()];
-          gameState.cardDeck = [...gameState.cardDeck];
-          bus.emit('cards:storeUpdated', { store: gameState.cardStore });
-        }
-      }
-
+      refillStore();
       bus.emit('phase:buying', { player });
 
       if (player.isAI) {
@@ -196,21 +180,26 @@ class Game {
     }
   }
 
-  endBuyPhase() {
-    this.endTurn();
+  async endBuyPhase() {
+    await this.endTurn();
   }
 
-  endTurn() {
+  async endTurn() {
     const player = gameState.currentPlayer;
     gameState.phase = PHASES.END_TURN;
 
-    // Poison Spit (id 46): deal 1 damage to each player damaged this turn
-    if (hasCard(player, 'Poison Spit') && player._damagedThisTurn && player._damagedThisTurn.size > 0) {
-      for (const target of player._damagedThisTurn) {
-        if (target.alive && target !== player) {
-          dealDamage(player, target, 1);
+    // Poison Spit (id 46): deal 1 damage to each opponent damaged this turn
+    if (hasCard(player, 'Poison Spit') && player._damagedOpponentsThisTurn && player._damagedOpponentsThisTurn.size > 0) {
+      for (const target of player._damagedOpponentsThisTurn) {
+        if (target.alive) {
+          await dealDamage(player, target, 1);
         }
       }
+      if (this.checkWin()) return;
+    }
+
+    if (!player._dealtOpponentDamageThisTurn && hasCard(player, 'Herbivore')) {
+      addVP(player, 1);
       if (this.checkWin()) return;
     }
 
@@ -227,7 +216,6 @@ class Game {
 
     bus.emit('turn:end', { player });
 
-    // Frenzy (id 33): extra turn
     if (player._extraTurn) {
       player._extraTurn = false;
       this.startTurn();

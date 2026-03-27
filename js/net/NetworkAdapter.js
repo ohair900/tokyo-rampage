@@ -13,6 +13,7 @@ class NetworkAdapter {
     this.localPlayerIndex = null;
     this.connected = false;
     this.pendingYieldResolvers = new Map(); // playerIndex -> resolve fn
+    this.pendingReactionResolvers = new Map(); // reactionId -> resolve fn
     this.serverDice = null; // current server-provided dice
     this._reconnectAttempts = 0;
     this._maxReconnectDelay = 15000;
@@ -138,6 +139,10 @@ class NetworkAdapter {
     this.send({ type: 'c:yieldDecision', yielded });
   }
 
+  sendReactionResult(reactionId, reactionType, result) {
+    this.send({ type: 'c:reactionResult', reactionId, reactionType, result });
+  }
+
   sendBuyCard(cardIndex) {
     this.send({ type: 'c:buyCard', cardIndex });
   }
@@ -201,6 +206,12 @@ class NetworkAdapter {
   createYieldPromise(playerIndex) {
     return new Promise((resolve) => {
       this.pendingYieldResolvers.set(playerIndex, resolve);
+    });
+  }
+
+  createReactionPromise(reactionId) {
+    return new Promise((resolve) => {
+      this.pendingReactionResolvers.set(reactionId, resolve);
     });
   }
 
@@ -280,6 +291,16 @@ class NetworkAdapter {
         }
         bus.emit('net:yieldResult', msg);
         break;
+
+      case 's:reactionResult': {
+        const reactionResolver = this.pendingReactionResolvers.get(msg.reactionId);
+        if (reactionResolver) {
+          reactionResolver(msg.result);
+          this.pendingReactionResolvers.delete(msg.reactionId);
+        }
+        bus.emit('net:reactionResult', msg);
+        break;
+      }
 
       case 's:cardBought':
         bus.emit('net:cardBought', msg);

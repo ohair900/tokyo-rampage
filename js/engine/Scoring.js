@@ -21,6 +21,10 @@ export function resolveVP(player, diceCounts) {
     bus.emit('ability:triggered', { player, ability: player.monster.ability, detail: `+${triplesCount} VP from triples` });
   }
 
+  if (triplesCount > 0) {
+    player._triplesScoredThisGame = (player._triplesScoredThisGame || 0) + triplesCount;
+  }
+
   if (totalVP > 0) {
     addVP(player, totalVP);
     bus.emit('scoring:diceVP', { player, amount: totalVP });

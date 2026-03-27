@@ -5,7 +5,7 @@ import { buyCard, sweepStore } from '../engine/Cards.js';
 import { game } from '../engine/Game.js';
 import { PHASES, SWEEP_COST, MAX_HP } from '../data/constants.js';
 import { cardFrameSVG } from './SVGAssets.js';
-import { hasCard, spendEnergy } from '../state/actions.js';
+import { hasCard, spendEnergy, healPlayer } from '../state/actions.js';
 import { networkAdapter } from '../net/NetworkAdapter.js';
 
 class CardStoreUI {
@@ -52,9 +52,9 @@ class CardStoreUI {
           if (this.purchasing) return;
           this.purchasing = true;
           cardEl.classList.add('card-exit');
-          cardEl.addEventListener('animationend', () => {
+          cardEl.addEventListener('animationend', async () => {
             if (game.multiplayerAdapter) networkAdapter.sendBuyCard(i);
-            buyCard(player, i);
+            await buyCard(player, i);
             this.purchasing = false;
             this.render();
           }, { once: true });
@@ -88,8 +88,7 @@ class CardStoreUI {
           onClick: () => {
             if (spendEnergy(player, 2)) {
               if (game.multiplayerAdapter) networkAdapter.sendRapidHeal();
-              player.hp = Math.min(player.hp + 1, maxHP);
-              bus.emit('player:healed', { player, amount: 1 });
+              healPlayer(player, 1, { allowInTokyo: true });
               this.render();
             }
           }

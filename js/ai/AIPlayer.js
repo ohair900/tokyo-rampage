@@ -4,9 +4,10 @@ import { reroll, confirmDice } from '../engine/Dice.js';
 import { buyCard, sweepStore } from '../engine/Cards.js';
 import { game } from '../engine/Game.js';
 import { createStrategy } from './strategies.js';
-import { hasCard, spendEnergy } from '../state/actions.js';
+import { hasCard, spendEnergy, healPlayer } from '../state/actions.js';
 import { PHASES, MAX_HP } from '../data/constants.js';
 import { networkAdapter } from '../net/NetworkAdapter.js';
+import { rollDie } from '../utils/random.js';
 
 const AI_DELAY = 800; // ms between AI actions
 const MAX_BUYS_PER_TURN = 5;
@@ -41,6 +42,10 @@ class AIController {
 
     bus.on('ai:buy', ({ player }) => {
       this.handleBuy(player);
+    });
+
+    bus.on('ai:defenseReaction', ({ reactionId, type, player, amount, maxSpend, resolve }) => {
+      this.handleDefenseReaction(reactionId, type, player, amount, maxSpend, resolve);
     });
   }
 
@@ -97,6 +102,23 @@ class AIController {
     }, AI_DELAY / 2);
   }
 
+  handleDefenseReaction(reactionId, type, player, amount, maxSpend, resolve) {
+    let result = {};
+
+    if (type === 'wings') {
+      result = { use: player.energy >= 2 && amount > 0 };
+    } else if (type === 'energyShield') {
+      result = { spend: Math.min(player.energy, maxSpend || 0) };
+    } else if (type === 'camouflage') {
+      result = { rolledFace: rollDie() };
+    }
+
+    setTimeout(() => {
+      if (game.multiplayerAdapter) networkAdapter.sendReactionResult(reactionId, type, result);
+      resolve(result);
+    }, AI_DELAY / 2);
+  }
+
   async handleBuy(player) {
     const strategy = this.strategies.get(player.id);
     if (!strategy) {
@@ -142,7 +164,7 @@ class AIController {
 
         // Buy the best card
         if (game.multiplayerAdapter) networkAdapter.sendBuyCard(best.index);
-        if (buyCard(player, best.index)) {
+        if (await buyCard(player, best.index)) {
           boughtAny = true;
           buyCount++;
           await this.delay();
@@ -185,8 +207,7 @@ class AIController {
     ) {
       if (spendEnergy(player, 2)) {
         if (game.multiplayerAdapter) networkAdapter.sendRapidHeal();
-        player.hp = Math.min(player.hp + 1, maxHP);
-        bus.emit('player:healed', { player, amount: 1 });
+        healPlayer(player, 1, { allowInTokyo: true });
         heals++;
       } else {
         break;

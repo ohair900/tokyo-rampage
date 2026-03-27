@@ -14,7 +14,7 @@ import { game } from '../engine/Game.js';
 import { toggleKeep, reroll, confirmDice } from '../engine/Dice.js';
 import { buyCard, sweepStore } from '../engine/Cards.js';
 import { healPlayer, spendEnergy } from '../state/actions.js';
-import { MAX_HP, PHASES } from '../data/constants.js';
+import { PHASES } from '../data/constants.js';
 import { networkAdapter } from './NetworkAdapter.js';
 
 class MultiplayerSync {
@@ -130,13 +130,18 @@ class MultiplayerSync {
       yieldPromise.then((yielded) => resolve(yielded));
     });
 
+    bus.on('net:defenseReaction', ({ reactionId, resolve }) => {
+      const reactionPromise = networkAdapter.createReactionPromise(reactionId);
+      reactionPromise.then((result) => resolve(result));
+    });
+
     // Remote player bought a card
-    bus.on('net:cardBought', ({ playerIndex, cardIndex }) => {
+    bus.on('net:cardBought', async ({ playerIndex, cardIndex }) => {
       if (!this.active) return;
       if (playerIndex === networkAdapter.localPlayerIndex) return;
       const player = gameState.players[playerIndex];
       if (player) {
-        buyCard(player, cardIndex);
+        await buyCard(player, cardIndex);
       }
     });
 
@@ -156,8 +161,7 @@ class MultiplayerSync {
       if (playerIndex === networkAdapter.localPlayerIndex) return;
       const player = gameState.players[playerIndex];
       if (player && spendEnergy(player, 2)) {
-        player.hp = Math.min(player.hp + 1, player.maxHP || MAX_HP);
-        bus.emit('player:healed', { player, amount: 1 });
+        healPlayer(player, 1, { allowInTokyo: true });
       }
     });
 

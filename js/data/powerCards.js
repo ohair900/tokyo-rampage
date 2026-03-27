@@ -12,15 +12,15 @@ export const POWER_CARDS = [
     onBuy: (p) => { addVP(p, 2); addEnergy(p, 3); } },
   { id: 5, name: 'Skyscraper', cost: 6, type: 'discard', description: '+4 VP', onBuy: (p) => addVP(p, 4) },
   { id: 6, name: 'Gas Refinery', cost: 6, type: 'discard', description: '+2 VP, all others lose 3 HP',
-    onBuy: (p, gs) => {
+    onBuy: async (p, gs) => {
       addVP(p, 2);
       for (const other of gs.players) {
-        if (other !== p && other.alive) dealDamage(p, other, 3);
+        if (other !== p && other.alive) await dealDamage(p, other, 3);
       }
     }
   },
   { id: 7, name: 'Tank', cost: 4, type: 'discard', description: '+4 VP, take 3 damage',
-    onBuy: (p, gs) => { addVP(p, 4); dealDamage(p, p, 3); }
+    onBuy: async (p) => { addVP(p, 4); await dealDamage(p, p, 3); }
   },
   { id: 8, name: 'Evacuation Orders', cost: 7, type: 'discard', description: 'All other players lose 5 VP',
     onBuy: (p, gs) => {
@@ -30,24 +30,26 @@ export const POWER_CARDS = [
     }
   },
   { id: 9, name: 'Heal', cost: 3, type: 'discard', description: 'Heal to full HP',
-    onBuy: (p) => { p.hp = MAX_HP; }
+    onBuy: (p) => healPlayer(p, (p.maxHP || MAX_HP) - p.hp, { allowInTokyo: true })
   },
   { id: 10, name: 'Energy Drink', cost: 1, type: 'discard', description: '+2 energy', onBuy: (p) => addEnergy(p, 2) },
   { id: 11, name: 'National Guard', cost: 3, type: 'discard', description: '+2 VP, take 2 damage',
-    onBuy: (p) => { addVP(p, 2); dealDamage(p, p, 2); }
+    onBuy: async (p) => { addVP(p, 2); await dealDamage(p, p, 2); }
   },
   { id: 12, name: 'Amusement Park', cost: 4, type: 'discard', description: '+4 VP if you have 3+ sets of triples this game',
-    onBuy: (p) => addVP(p, 4)
+    onBuy: (p) => {
+      if ((p._triplesScoredThisGame || 0) >= 3) addVP(p, 4);
+    }
   },
   { id: 13, name: 'Lightning Strike', cost: 5, type: 'discard', description: 'All others take 2 damage',
-    onBuy: (p, gs) => {
+    onBuy: async (p, gs) => {
       for (const other of gs.players) {
-        if (other !== p && other.alive) dealDamage(p, other, 2);
+        if (other !== p && other.alive) await dealDamage(p, other, 2);
       }
     }
   },
   { id: 14, name: 'Monster Snack', cost: 2, type: 'discard', description: '+1 VP, heal 1 HP',
-    onBuy: (p) => { addVP(p, 1); healPlayer(p, 1); }
+    onBuy: (p) => { addVP(p, 1); healPlayer(p, 1, { allowInTokyo: true }); }
   },
   { id: 15, name: 'Power Surge', cost: 3, type: 'discard', description: '+2 energy, +1 VP',
     onBuy: (p) => { addEnergy(p, 2); addVP(p, 1); }
@@ -64,7 +66,7 @@ export const POWER_CARDS = [
     description: 'At end of turn, gain 1 energy if you have 0' },
   { id: 20, name: 'Even Bigger', cost: 4, type: 'keep',
     description: 'Your max HP becomes 12. Heal 2 HP.',
-    onBuy: (p) => { p.maxHP = 12; p.hp = Math.min(p.hp + 2, 12); } },
+    onBuy: (p) => { p.maxHP = 12; healPlayer(p, 2, { allowInTokyo: true }); } },
   { id: 21, name: 'Fire Breathing', cost: 4, type: 'keep',
     description: 'Deal +1 damage when you attack' },
   { id: 22, name: 'Friend of Children', cost: 3, type: 'keep',
@@ -88,12 +90,12 @@ export const POWER_CARDS = [
 
   // --- New Discard (immediate) cards ---
   { id: 31, name: 'Stretching', cost: 3, type: 'discard', description: 'Heal 2 HP',
-    onBuy: (p) => healPlayer(p, 2) },
+    onBuy: (p) => healPlayer(p, 2, { allowInTokyo: true }) },
   { id: 32, name: 'Acid Attack', cost: 6, type: 'discard', description: 'All others take 2 damage and lose 1 energy',
-    onBuy: (p, gs) => {
+    onBuy: async (p, gs) => {
       for (const other of gs.players) {
         if (other !== p && other.alive) {
-          dealDamage(p, other, 2);
+          await dealDamage(p, other, 2);
           other.energy = Math.max(0, other.energy - 1);
         }
       }
@@ -102,29 +104,29 @@ export const POWER_CARDS = [
   { id: 33, name: 'Frenzy', cost: 7, type: 'discard', description: 'Take another turn after this one',
     onBuy: (p) => { p._extraTurn = true; } },
   { id: 34, name: 'High Altitude Bombing', cost: 5, type: 'discard', description: 'All others take 3 damage',
-    onBuy: (p, gs) => {
+    onBuy: async (p, gs) => {
       for (const other of gs.players) {
-        if (other !== p && other.alive) dealDamage(p, other, 3);
+        if (other !== p && other.alive) await dealDamage(p, other, 3);
       }
     }
   },
   { id: 35, name: 'Vast Storm', cost: 6, type: 'discard', description: '+2 VP and gain 3 energy',
     onBuy: (p) => { addVP(p, 2); addEnergy(p, 3); } },
   { id: 36, name: 'Drop from High', cost: 5, type: 'discard', description: 'Deal 4 damage to a random player outside Tokyo',
-    onBuy: (p, gs) => {
+    onBuy: async (p, gs) => {
       const targets = gs.players.filter(o => o !== p && o.alive && !o.inTokyo);
       if (targets.length > 0) {
         const seed = (gs.round || 1) * 1000 + p.id;
         const target = targets[deterministicIndex(seed, targets.length)];
-        dealDamage(p, target, 4);
+        await dealDamage(p, target, 4);
       }
     }
   },
   { id: 37, name: 'Flame Thrower', cost: 4, type: 'discard', description: 'All others take 1 damage; in Tokyo take +1 extra',
-    onBuy: (p, gs) => {
+    onBuy: async (p, gs) => {
       for (const other of gs.players) {
         if (other !== p && other.alive) {
-          dealDamage(p, other, other.inTokyo ? 2 : 1);
+          await dealDamage(p, other, other.inTokyo ? 2 : 1);
         }
       }
     }

@@ -20,6 +20,7 @@ export function createPlayerState(id, name, monster, isAI = false, isRemote = fa
     name,
     monster,
     hp: STARTING_HP,
+    maxHP: STARTING_HP,
     vp: STARTING_VP,
     energy: STARTING_ENERGY,
     isAI,
@@ -28,6 +29,9 @@ export function createPlayerState(id, name, monster, isAI = false, isRemote = fa
     inTokyo: false, // 'city', 'bay', or false
     cards: [],
     alive: true,
+    _triplesScoredThisGame: 0,
+    _damagedOpponentsThisTurn: new Set(),
+    _dealtOpponentDamageThisTurn: false,
   };
 }
 
@@ -48,6 +52,7 @@ class GameState {
       cardStore: [],
       cardDeck: [],
       winner: null,
+      reactionCounter: 0,
     });
   }
 
@@ -82,6 +87,9 @@ class GameState {
 
   get winner() { return this.data.winner; }
   set winner(v) { this.data.winner = v; }
+
+  get reactionCounter() { return this.data.reactionCounter; }
+  set reactionCounter(v) { this.data.reactionCounter = v; }
 
   get alivePlayers() {
     return this.data.players.filter(p => p.alive);
