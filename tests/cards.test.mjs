@@ -8,6 +8,7 @@ import { game } from '../js/engine/Game.js';
 import { MONSTERS } from '../js/data/monsters.js';
 import { POWER_CARDS } from '../js/data/powerCards.js';
 import { buyCard, initCardStore, refillStore, sweepStore } from '../js/engine/Cards.js';
+import { resolveAttack } from '../js/engine/Combat.js';
 import { PHASES } from '../js/data/constants.js';
 
 function monster(id = 'king') {
@@ -182,6 +183,31 @@ test('rolling hearts in Tokyo does not heal before attacking', async () => {
   assert.equal(defender.hp, 9);
   assert.equal(bystander.hp, 9);
   assert.deepEqual(order, ['energy:1', 'damage:1', 'damage:1']);
+});
+
+test('reflected damage can end the game without waiting for a Tokyo yield prompt', async () => {
+  const attacker = makePlayer(0, 'Attacker', 'king', { hp: 1 });
+  const defender = makePlayer(1, 'Defender', 'king', { inTokyo: 'city' });
+  defender.cards.push(cloneCard('Reflective Hide'));
+
+  setupScenario([attacker, defender], {
+    current: 0,
+    phase: PHASES.RESOLVING_DICE,
+    running: true,
+  });
+
+  let yieldPrompts = 0;
+  const off = bus.on('ui:yieldPrompt', () => {
+    yieldPrompts += 1;
+  });
+
+  await resolveAttack(attacker, 1);
+  off();
+
+  assert.equal(attacker.alive, false);
+  assert.equal(defender.alive, true);
+  assert.equal(gameState.winner, defender);
+  assert.equal(yieldPrompts, 0);
 });
 
 test('Heal respects the player max HP and emits heal events', async () => {

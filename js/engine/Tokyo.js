@@ -43,7 +43,11 @@ export function tryEnterTokyo(player) {
 }
 
 export function handleYield(yieldingPlayer, attacker) {
+  if (!yieldingPlayer?.alive || !yieldingPlayer.inTokyo || !attacker?.alive || gameState.winner) {
+    return false;
+  }
   const slot = yieldingPlayer.inTokyo;
   leaveTokyo(yieldingPlayer);
   enterTokyo(attacker, slot);
+  return true;
 }

@@ -3,7 +3,7 @@ import { dealDamage, hasCard, addVP, addEnergy } from '../state/actions.js';
 import { bus } from '../utils/eventBus.js';
 
 export async function resolveAttack(player, clawCount) {
-  if (clawCount <= 0) return;
+  if (clawCount <= 0 || !player.alive || gameState.winner) return [];
 
   // Keep card damage bonuses
   let damageBonus = 0;
@@ -13,6 +13,7 @@ export async function resolveAttack(player, clawCount) {
 
   const yieldRequests = [];
   const damagedTargets = [];
+  const attackEnded = () => !player.alive || !!gameState.winner;
 
   if (player.inTokyo) {
     // In Tokyo: damage everyone outside
@@ -20,6 +21,7 @@ export async function resolveAttack(player, clawCount) {
     for (const target of targets) {
       const result = await dealDamage(player, target, totalDamage);
       if (result.damageApplied > 0) damagedTargets.push(target);
+      if (attackEnded()) return yieldRequests;
     }
   } else {
     // Outside Tokyo: damage everyone inside
@@ -32,8 +34,11 @@ export async function resolveAttack(player, clawCount) {
       if (result.damageApplied > 0 && target.alive && target.hp > 0) {
         yieldRequests.push(target);
       }
+      if (attackEnded()) return yieldRequests;
     }
   }
+
+  if (attackEnded()) return yieldRequests;
 
   // Kraken: Tentacle Grab — steal 1 energy from each damaged target
   if (player.monster.id === 'kraken' && damagedTargets.length > 0) {
@@ -52,14 +57,16 @@ export async function resolveAttack(player, clawCount) {
 
   // Handle yield decisions
   for (const target of yieldRequests) {
+    if (attackEnded()) return yieldRequests;
     const shouldYield = await requestYield(target, player, totalDamage);
+    if (attackEnded()) return yieldRequests;
     if (shouldYield) {
       bus.emit('tokyo:yield', { player: target, attacker: player });
     }
   }
 
   // Keep card: Alpha Monster — +1 VP when you attack
-  if (hasCard(player, 'Alpha Monster')) {
+  if (!attackEnded() && hasCard(player, 'Alpha Monster')) {
     addVP(player, 1);
   }
 
