@@ -428,6 +428,16 @@
   justify-content: center;
 }
 
+.camouflage-roll-preview {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 18px;
+}
+
+.camouflage-roll-status {
+  min-height: 48px;
+}
+
 .btn-yield {
   background: linear-gradient(135deg, var(--energy-color), #d4a80e);
   color: #1a1a2e;

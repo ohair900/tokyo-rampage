@@ -4,10 +4,22 @@ import { monsterSVG } from './SVGAssets.js';
 import { game } from '../engine/Game.js';
 import { networkAdapter } from '../net/NetworkAdapter.js';
 import { rollDie } from '../utils/random.js';
+import { DICE_FACES } from '../data/constants.js';
+import { diceFaceSVG } from './SVGAssets.js';
+
+const FACE_DISPLAY = {
+  '1': { svg: diceFaceSVG('1', 28), className: 'face-number' },
+  '2': { svg: diceFaceSVG('2', 28), className: 'face-number' },
+  '3': { svg: diceFaceSVG('3', 28), className: 'face-number' },
+  claw: { svg: diceFaceSVG('claw', 28), className: 'face-claw' },
+  heart: { svg: diceFaceSVG('heart', 28), className: 'face-heart' },
+  lightning: { svg: diceFaceSVG('lightning', 28), className: 'face-lightning' },
+};
 
 class Dialogs {
   constructor() {
     this.overlay = null;
+    this.pendingTimers = [];
   }
 
   init() {
@@ -119,12 +131,32 @@ class Dialogs {
         }),
       ]));
     } else if (type === 'camouflage') {
-      body.push(createElement('p', { textContent: 'Roll a die. A heart blocks the remaining damage.' }));
+      const status = createElement('p', {
+        className: 'camouflage-roll-status',
+        textContent: 'Roll a die. A heart blocks the remaining damage.',
+      });
+      const previewDie = this.createPreviewDie('heart');
+      const preview = createElement('div', { className: 'camouflage-roll-preview' }, [previewDie]);
+      let rolling = false;
+
+      body.push(status);
+      body.push(preview);
       body.push(createElement('div', { className: 'dialog-actions' }, [
         createElement('button', {
           className: 'btn btn-yield',
           textContent: 'Roll Die',
-          onClick: () => this.finishDefense(reactionId, type, { rolledFace: rollDie() }, resolve),
+          onClick: (event) => {
+            if (rolling) return;
+            rolling = true;
+            const rollButton = event.currentTarget;
+            rollButton.disabled = true;
+            this.animateSingleDieRoll(previewDie, rollDie(), ({ rolledFace }) => {
+              status.textContent = rolledFace === 'heart'
+                ? 'Rolled a heart. Camouflage blocks the damage!'
+                : `Rolled ${rolledFace}. Camouflage does not block this hit.`;
+              this.finishDefense(reactionId, type, { rolledFace }, resolve);
+            });
+          },
         }),
       ]));
     }
@@ -162,8 +194,61 @@ class Dialogs {
   }
 
   hide() {
+    this.clearPendingTimers();
     this.overlay.classList.remove('visible');
     clearElement(this.overlay);
+  }
+
+  createPreviewDie(face) {
+    const display = FACE_DISPLAY[face];
+    return createElement('div', {
+      className: `die ${display.className}`,
+      innerHTML: display.svg,
+    });
+  }
+
+  setPreviewDieFace(die, face, extraClass = '') {
+    const display = FACE_DISPLAY[face];
+    die.innerHTML = display.svg;
+    die.className = `die ${display.className} ${extraClass}`.trim();
+  }
+
+  animateSingleDieRoll(die, finalFace, onComplete) {
+    bus.emit('dice:singleRolled', { die: finalFace });
+    die.classList.add('rolling');
+
+    const interval = setInterval(() => {
+      const randomFace = DICE_FACES[Math.floor(Math.random() * DICE_FACES.length)];
+      this.setPreviewDieFace(die, randomFace, 'rolling');
+    }, 50);
+    this.pendingTimers.push(interval);
+
+    const revealTimer = setTimeout(() => {
+      this.clearPendingTimer(revealTimer);
+      this.clearPendingTimer(interval);
+      clearInterval(interval);
+      this.setPreviewDieFace(die, finalFace, 'landed');
+
+      const finishTimer = setTimeout(() => {
+        this.clearPendingTimer(finishTimer);
+        die.classList.remove('landed');
+        onComplete({ rolledFace: finalFace });
+      }, 400);
+      this.pendingTimers.push(finishTimer);
+    }, 400);
+    this.pendingTimers.push(revealTimer);
+  }
+
+  clearPendingTimers() {
+    for (const timer of this.pendingTimers) {
+      clearTimeout(timer);
+      clearInterval(timer);
+    }
+    this.pendingTimers = [];
+  }
+
+  clearPendingTimer(timer) {
+    this.pendingTimers = this.pendingTimers.filter((pending) => pending !== timer);
   }
 }
 

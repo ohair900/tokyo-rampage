@@ -26,6 +26,7 @@ class AudioManager {
 
     // Wire bus events to sounds
     bus.on('dice:rolled', () => this.play('diceRoll'));
+    bus.on('dice:singleRolled', () => this.play('diceRoll'));
     bus.on('combat:damage', () => this.play('damage'));
     bus.on('player:healed', () => this.play('heal'));
     bus.on('player:vpGained', () => this.play('vp'));
