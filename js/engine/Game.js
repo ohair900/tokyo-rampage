@@ -107,22 +107,41 @@ class Game {
   async resolveDice() {
     const player = gameState.currentPlayer;
     const counts = countDice(gameState.dice);
+    const hearts = counts.heart || 0;
+    const lightning = counts.lightning || 0;
+    const rawClaws = counts.claw || 0;
 
     gameState.phase = PHASES.RESOLVING_DICE;
     bus.emit('dice:resolving', { player, counts });
 
-    // 1. VP from numbers
-    resolveVP(player, counts);
-    if (this.checkWin()) return;
+    // 1. Heal with hearts before any other dice effects
+    if (hearts > 0) {
+      healPlayer(player, hearts);
+    }
 
-    // 2. Energy from lightning
-    const lightning = counts.lightning || 0;
+    // 2. Resolve energy from dice before any attack/Tokyo movement
     if (lightning > 0) {
       addEnergy(player, lightning);
     }
+    if (hearts === 0 && hasCard(player, 'Opportunist')) {
+      addEnergy(player, 1);
+    }
 
-    // 3. Attack with claws
-    const rawClaws = counts.claw || 0;
+    // 3. Resolve standard number-dice VP
+    resolveVP(player, counts);
+    if (this.checkWin()) return;
+
+    // Roll-triggered VP bonuses stay separate from number scoring,
+    // but still resolve before the attack/Tokyo step.
+    if (hasCard(player, 'Omnivore')) {
+      const faces = new Set(gameState.dice);
+      if (faces.size === 6) {
+        addVP(player, 2);
+        if (this.checkWin()) return;
+      }
+    }
+
+    // 4. Attack with claws
     let claws = rawClaws;
     if (player.monster.id === 'gigazaur' && claws >= 3) {
       claws += 1;
@@ -133,30 +152,10 @@ class Game {
       if (this.checkWin()) return;
     }
 
-    // Keep card: Omnivore — +2 VP if all 6 die faces present
-    if (hasCard(player, 'Omnivore')) {
-      const faces = new Set(gameState.dice);
-      if (faces.size === 6) {
-        addVP(player, 2);
-        if (this.checkWin()) return;
-      }
-    }
-
-    // 4. Heal with hearts before possible Tokyo entry
-    const hearts = counts.heart || 0;
-    if (hearts > 0) {
-      healPlayer(player, hearts);
-    }
-
-    // 5. If still outside Tokyo, try to enter after healing
+    // 5. If still outside Tokyo after attack resolution, try to enter.
     if (claws > 0 && !player.inTokyo && player.alive) {
       tryEnterTokyo(player);
       if (this.checkWin()) return;
-    }
-
-    // Opportunist (id 45): if 0 hearts rolled, gain 1 energy
-    if (hearts === 0 && hasCard(player, 'Opportunist')) {
-      addEnergy(player, 1);
     }
 
     this.startBuyPhase();

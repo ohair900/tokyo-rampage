@@ -24,4 +24,4 @@ export const PHASES = {
   GAME_OVER: 'gameOver'
 };
 
-export const RESOLVE_ORDER = ['vp', 'energy', 'attack', 'heal'];
+export const RESOLVE_ORDER = ['heal', 'energy', 'vp', 'attack'];

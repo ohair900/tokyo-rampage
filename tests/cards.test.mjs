@@ -42,6 +42,17 @@ function onHealEvents(events) {
   return bus.on('player:healed', (event) => events.push(event));
 }
 
+function trackResolutionOrder(order) {
+  const listeners = [
+    bus.on('player:healed', ({ amount }) => order.push(`heal:${amount}`)),
+    bus.on('player:energyGained', ({ amount }) => order.push(`energy:${amount}`)),
+    bus.on('scoring:diceVP', ({ amount }) => order.push(`diceVP:${amount}`)),
+    bus.on('combat:damage', ({ amount }) => order.push(`damage:${amount}`)),
+    bus.on('tokyo:entered', ({ slot }) => order.push(`tokyo:${slot}`)),
+  ];
+  return () => listeners.forEach((off) => off());
+}
+
 test('Wings can fully cancel an incoming attack', async () => {
   const attacker = makePlayer(0, 'Attacker');
   const defender = makePlayer(1, 'Defender');
@@ -99,6 +110,7 @@ test('hearts heal before entering Tokyo after a successful attack', async () => 
   const attacker = makePlayer(0, 'Attacker', 'king', { hp: 8 });
   const defender = makePlayer(1, 'Defender', 'king', { hp: 1, inTokyo: 'city' });
   const bystander = makePlayer(2, 'Bystander');
+  const order = [];
 
   setupScenario([attacker, defender, bystander], {
     current: 0,
@@ -109,11 +121,67 @@ test('hearts heal before entering Tokyo after a successful attack', async () => 
 
   gameState.dice = ['claw', 'heart', '1', '2', '2', '3'];
 
+  const off = trackResolutionOrder(order);
   await game.resolveDice();
+  off();
 
   assert.equal(attacker.hp, 9);
   assert.equal(attacker.inTokyo, 'city');
   assert.equal(defender.alive, false);
+  assert.deepEqual(order, ['heal:1', 'damage:1', 'tokyo:city']);
+});
+
+test('dice resolution applies hearts, energy, number VP, then attack and Tokyo entry', async () => {
+  const attacker = makePlayer(0, 'Attacker', 'king', { hp: 8 });
+  const defender = makePlayer(1, 'Defender', 'king', { hp: 1, inTokyo: 'city' });
+  const bystander = makePlayer(2, 'Bystander');
+  const order = [];
+
+  setupScenario([attacker, defender, bystander], {
+    current: 0,
+    phase: PHASES.ROLLING,
+    cardStore: [cloneCard('Corner Store')],
+    running: true,
+  });
+
+  gameState.dice = ['heart', 'lightning', '1', '1', '1', 'claw'];
+
+  const off = trackResolutionOrder(order);
+  await game.resolveDice();
+  off();
+
+  assert.equal(attacker.hp, 9);
+  assert.equal(attacker.energy, 1);
+  assert.equal(attacker.vp, 2);
+  assert.equal(attacker.inTokyo, 'city');
+  assert.equal(defender.alive, false);
+  assert.deepEqual(order, ['heal:1', 'energy:1', 'diceVP:1', 'damage:1', 'tokyo:city']);
+});
+
+test('rolling hearts in Tokyo does not heal before attacking', async () => {
+  const attacker = makePlayer(0, 'Attacker', 'king', { hp: 8, inTokyo: 'city' });
+  const defender = makePlayer(1, 'Defender', 'king', { hp: 10 });
+  const bystander = makePlayer(2, 'Bystander', 'king', { hp: 10 });
+  const order = [];
+
+  setupScenario([attacker, defender, bystander], {
+    current: 0,
+    phase: PHASES.ROLLING,
+    cardStore: [cloneCard('Corner Store')],
+    running: true,
+  });
+
+  gameState.dice = ['heart', 'claw', '2', '2', '3', 'lightning'];
+
+  const off = trackResolutionOrder(order);
+  await game.resolveDice();
+  off();
+
+  assert.equal(attacker.hp, 8);
+  assert.equal(attacker.energy, 1);
+  assert.equal(defender.hp, 9);
+  assert.equal(bystander.hp, 9);
+  assert.deepEqual(order, ['energy:1', 'damage:1', 'damage:1']);
 });
 
 test('Heal respects the player max HP and emits heal events', async () => {
